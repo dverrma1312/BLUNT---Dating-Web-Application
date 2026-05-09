@@ -51,3 +51,7 @@ CACHES = {
         'LOCATION': config('REDIS_URL'),
     }
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://blunt-dating-web-application-production.up.railway.app',
+]
