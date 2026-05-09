@@ -18,9 +18,9 @@ DATABASES = {
     }
 }
 
-# lock CORS to production domain only
 CORS_ALLOWED_ORIGINS = [
-    'https://blunt-dating-web-application-production.up.railway.app',  # update after Vercel deployment
+    'https://frontend-hv47.vercel.app',
+    'https://frontend-ftqziglkm-hv47.vercel.app',  # preview URL too
 ]
 
 # Redis for production — Railway Redis URL
