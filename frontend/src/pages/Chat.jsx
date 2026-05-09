@@ -24,7 +24,7 @@ function Chat() {
     if (!myId) return;
 
     const token = localStorage.getItem('access');
-    const ws = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${id}/?token=${token}`);
+    const ws = new WebSocket(`wss://blunt-dating-web-application-production.up.railway.app/ws/chat/${id}/?token=${token}`);
     wsRef.current = ws;
 
     ws.onopen = () => {
