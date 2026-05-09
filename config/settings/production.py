@@ -1,0 +1,45 @@
+from .base import *
+from decouple import config
+
+DEBUG = False
+
+SECRET_KEY = config('PRODUCTION_SECRET_KEY')
+
+ALLOWED_HOSTS = ['your-railway-app.railway.app']  # update after Railway deployment
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': config('PROD_DB_NAME'),
+        'USER': config('PROD_DB_USER'),
+        'PASSWORD': config('PROD_DB_PASSWORD'),
+        'HOST': config('PROD_DB_HOST'),
+        'PORT': config('PROD_DB_PORT', default='5432'),
+    }
+}
+
+# lock CORS to production domain only
+CORS_ALLOWED_ORIGINS = [
+    'https://your-vercel-app.vercel.app',  # update after Vercel deployment
+]
+
+# Redis for production — Railway Redis URL
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [config('REDIS_URL')],
+        },
+    },
+}
+
+# Cloudinary already configured in base.py
+# Static files
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# force HTTPS
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
