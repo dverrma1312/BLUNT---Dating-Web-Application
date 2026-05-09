@@ -9,6 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from decouple import config
 import requests
 from twilio.rest import Client
+from django_ratelimit.decorators import ratelimit
 
 
 class RegisterView(APIView):
