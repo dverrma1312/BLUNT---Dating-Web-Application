@@ -5,7 +5,7 @@ DEBUG = False
 
 SECRET_KEY = config('PRODUCTION_SECRET_KEY')
 
-ALLOWED_HOSTS = ['your-railway-app.railway.app']  # update after Railway deployment
+ALLOWED_HOSTS = ['blunt-dating-web-application-production.up.railway.app']  # update after Railway deployment
 
 DATABASES = {
     'default': {
@@ -20,7 +20,7 @@ DATABASES = {
 
 # lock CORS to production domain only
 CORS_ALLOWED_ORIGINS = [
-    'https://your-vercel-app.vercel.app',  # update after Vercel deployment
+    'https://blunt-dating-web-application-production.up.railway.app',  # update after Vercel deployment
 ]
 
 # Redis for production — Railway Redis URL
