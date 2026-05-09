@@ -110,7 +110,7 @@ class SendOTPView(APIView):
     permission_classes = [AllowAny]
 
 
-    @ratelimit(key='post:phone_number', rate='5/h', method='POST', block=True)
+    
     def post(self, request):
         phone_number = request.data.get('phone_number')
 
