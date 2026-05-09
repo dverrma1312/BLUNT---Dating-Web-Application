@@ -45,8 +45,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # add this
-    'corsheaders.middleware.CorsMiddleware', 
-    'django.middleware.security.SecurityMiddleware',             # Handles security headers
+    'corsheaders.middleware.CorsMiddleware',          # Handles security headers
     'django.contrib.sessions.middleware.SessionMiddleware',      # Manages sessions
     'django.middleware.common.CommonMiddleware',                 # Common request handling
     'django.middleware.csrf.CsrfViewMiddleware',                 # Protects against CSRF attacks
@@ -159,6 +158,7 @@ CHANNEL_LAYERS = {
 }
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 cloudinary.config(
