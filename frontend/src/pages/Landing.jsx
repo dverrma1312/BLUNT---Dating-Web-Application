@@ -1,13 +1,58 @@
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
+const categories = ['Hangout', 'Smokeup', 'Coffee', 'Hookup', 'Nightout', 'Linkup', 'Tripout', 'Workout'];
+
 function Landing() {
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleCategoryClick = () => {
+    setDropdownOpen(!dropdownOpen);
+  };
+
+  const handleCategorySelect = () => {
+    setDropdownOpen(false);
+  };
+
   return (
     <div style={styles.container}>
       {/* Header/Navbar */}
       <header style={styles.header}>
-        <nav style={styles.nav}>
+        <nav style={styles.nav} ref={dropdownRef}>
           <Link to="#" style={styles.navLink}>Why BLUNT</Link>
-          <Link to="#" style={styles.navLink}>Categories</Link>
+          <div style={styles.dropdownContainer}>
+            <span
+              style={{ ...styles.navLink, cursor: 'pointer', color: dropdownOpen ? '#F5F5F5' : '#888888' }}
+              onClick={handleCategoryClick}
+            >
+              Categories
+            </span>
+            {dropdownOpen && (
+              <div style={styles.dropdown}>
+                {categories.map((cat) => (
+                  <div
+                    key={cat}
+                    style={styles.dropdownItem}
+                    onClick={handleCategorySelect}
+                  >
+                    {cat}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <Link to="#" style={styles.navLink}>Safety</Link>
           <Link to="#" style={styles.navLink}>Support</Link>
         </nav>
@@ -47,6 +92,8 @@ const styles = {
   nav: {
     display: 'flex',
     gap: '48px',
+    alignItems: 'center',
+    position: 'relative',
   },
   navLink: {
     fontSize: '14px',
@@ -54,6 +101,29 @@ const styles = {
     textDecoration: 'none',
     transition: 'color 0.2s',
     fontWeight: '400',
+  },
+  dropdownContainer: {
+    position: 'relative',
+  },
+  dropdown: {
+    position: 'absolute',
+    top: '100%',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    marginTop: '12px',
+    backgroundColor: '#141414',
+    border: '1px solid #222222',
+    borderRadius: '8px',
+    padding: '8px 0',
+    minWidth: '140px',
+    zIndex: 200,
+  },
+  dropdownItem: {
+    fontSize: '14px',
+    color: '#F5F5F5',
+    padding: '10px 16px',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s',
   },
   hero: {
     minHeight: '100vh',
