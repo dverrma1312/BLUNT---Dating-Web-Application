@@ -1,11 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const categories = ['Hangout', 'Smokeup', 'Coffee', 'Hookup', 'Nightout', 'Linkup', 'Tripout', 'Workout'];
 
 function Landing() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   const handleMouseEnter = () => {
@@ -28,7 +27,6 @@ function Landing() {
           <Link to="#" style={styles.navLink}>Why BLUNT</Link>
           <div
             style={styles.dropdownContainer}
-            ref={dropdownRef}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
           >
@@ -36,7 +34,7 @@ function Landing() {
               Categories
             </span>
             {dropdownOpen && (
-              <div style={styles.dropdown}>
+              <div style={styles.dropdown} onMouseEnter={handleMouseEnter}>
                 {categories.map((cat) => (
                   <div
                     key={cat}
