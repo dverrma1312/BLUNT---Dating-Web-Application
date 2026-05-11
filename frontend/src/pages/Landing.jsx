@@ -15,8 +15,8 @@ function Landing() {
 
       {/* Hero Section */}
       <section style={styles.hero}>
-        {/* Big BLUNT. logo in center */}
-        <h1 style={styles.heroLogo}>BLUNT.</h1>
+        {/* Big bLUNT. logo in center */}
+        <h1 style={styles.heroLogo}>bLUNT.</h1>
 
         {/* Login/Signup links in center */}
         <div style={styles.authLinks}>
@@ -64,11 +64,11 @@ const styles = {
     position: 'relative',
   },
   heroLogo: {
-    fontFamily: "'Playfair Display', serif",
+    fontFamily: "'Inter', sans-serif",
     fontSize: 'clamp(100px, 25vw, 280px)',
-    fontWeight: '600',
+    fontWeight: '900',
     color: '#FFFFFF',
-    letterSpacing: '-2px',
+    letterSpacing: '-0.02em',
     userSelect: 'none',
     marginBottom: '32px',
   },
