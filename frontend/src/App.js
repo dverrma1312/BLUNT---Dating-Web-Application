@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';  // imports rou
 import PrivateRoute from './components/PrivateRoute';  // imports our private route wrapper
 
 // import all pages
+import Landing from './pages/Landing';
 import Register from './pages/Register';
 import VerifyOTP from './pages/VerifyOTP';
 import ProfileSetup from './pages/ProfileSetup';
@@ -22,6 +23,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* public routes — no login needed */}
+        <Route path="/" element={<Landing />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
         <Route path="/login" element={<Login />} />
