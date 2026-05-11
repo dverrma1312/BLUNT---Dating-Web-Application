@@ -15,8 +15,8 @@ function Landing() {
 
       {/* Hero Section */}
       <section style={styles.hero}>
-        {/* Big bLUNT. logo in center */}
-        <h1 style={styles.heroLogo}>bLUNT.</h1>
+        {/* Big blunt. logo in center */}
+        <h1 style={styles.heroLogo}>blunt.</h1>
 
         {/* Login/Signup links in center */}
         <div style={styles.authLinks}>
