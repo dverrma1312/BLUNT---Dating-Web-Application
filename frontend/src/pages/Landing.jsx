@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const navLinkHoverStyle = `
@@ -8,21 +8,14 @@ const navLinkHoverStyle = `
 const categories = ['Hangout', 'Smokeup', 'Coffee', 'Hookup', 'Nightout', 'Linkup', 'Tripout', 'Workout'];
 
 function Landing() {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleEsc = (e) => {
-      if (e.key === 'Escape') setDropdownOpen(false);
-    };
-    document.addEventListener('keydown', handleEsc);
-    return () => document.removeEventListener('keydown', handleEsc);
-  }, []);
-
-  useEffect(() => {
     const handleClickOutside = (e) => {
-      if (!e.target.closest('.categories-dropdown')) {
-        setDropdownOpen(false);
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -40,18 +33,15 @@ function Landing() {
       <header style={styles.header}>
         <nav style={styles.nav}>
           <Link to="#" className="nav-link" style={styles.navLink}>Why BLUNT</Link>
-          <div
-            className="categories-dropdown"
-            style={styles.dropdownContainer}
-          >
+          <div ref={dropdownRef} style={styles.dropdownWrapper}>
             <span
               className="nav-link"
               style={styles.navLink}
-              onClick={() => setDropdownOpen(!dropdownOpen)}
+              onClick={() => setIsOpen(!isOpen)}
             >
               Categories
             </span>
-            {dropdownOpen && (
+            {isOpen && (
               <div style={styles.dropdown}>
                 {categories.map((cat) => (
                   <div
@@ -123,7 +113,7 @@ const styles = {
     fontWeight: '400',
     cursor: 'pointer',
   },
-  dropdownContainer: {
+  dropdownWrapper: {
     position: 'relative',
   },
   dropdown: {
@@ -137,7 +127,7 @@ const styles = {
     borderRadius: '8px',
     padding: '8px 0',
     minWidth: '140px',
-    zIndex: 200,
+    zIndex: 1000,
   },
   dropdownItem: {
     fontSize: '14px',
