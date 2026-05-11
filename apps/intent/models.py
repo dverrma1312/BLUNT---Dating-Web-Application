@@ -8,13 +8,20 @@ CATEGORY_CHOICES = [
     ('coffee', 'Coffee & Chill'),
 ]
 
+FLEXIBILITY_CHOICES = [
+    ('Fixed', 'Fixed'),
+    ('I Don\'t Know', 'I Don\'t Know'),
+    ('Up To You', 'Up To You'),
+]
+
 class UserIntent(models.Model):
     # stores a user's intent — carries over until they change it
     # one intent per user, always
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='intent')  # one intent per user, deletes if user is deleted
     what_are_you_doing = models.TextField(blank=True)  # free text, optional
-    looking_for = models.CharField(max_length=10, choices=CATEGORY_CHOICES)  # their current category — used for matching
+    looking_for = models.CharField(max_length=10, choices=CATEGORY_CHOICES, blank=True)  # their current category — used for matching
+    plan_flexibility = models.CharField(max_length=20, choices=FLEXIBILITY_CHOICES, blank=True)  # plan flexibility
     updated_at = models.DateTimeField(auto_now=True)  # automatically updates every time intent is saved
 
     def __str__(self):

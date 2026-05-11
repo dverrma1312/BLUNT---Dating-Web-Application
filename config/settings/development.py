@@ -12,7 +12,7 @@ DEBUG = True
 
 # ALLOWED_HOSTS is the list of domains that can access this Django app
 # During development we only allow localhost
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000', 'http://127.0.0.1:3001']
 
 # Database configuration for local development
 # We use PostgreSQL locally to match what production will use
@@ -24,5 +24,13 @@ DATABASES = {
         'PASSWORD': config('DB_PASSWORD'),           # database password from .env
         'HOST': config('DB_HOST', default='localhost'), # where PostgreSQL is running
         'PORT': config('DB_PORT', default='5432'),      # default PostgreSQL port
+    }
+}
+
+# Redis cache for django_ratelimit
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': config('REDIS_URL', default='redis://127.0.0.1:6379'),
     }
 }

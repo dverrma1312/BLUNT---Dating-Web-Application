@@ -43,9 +43,9 @@ INSTALLED_APPS = [
 # Middleware is code that runs on every request and response
 # Think of it as a pipeline every request passes through
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # add this
-    'corsheaders.middleware.CorsMiddleware',          # Handles security headers
     'django.contrib.sessions.middleware.SessionMiddleware',      # Manages sessions
     'django.middleware.common.CommonMiddleware',                 # Common request handling
     'django.middleware.csrf.CsrfViewMiddleware',                 # Protects against CSRF attacks
@@ -145,7 +145,13 @@ CELERY_BEAT_SCHEDULE = {
 # allow requests from React frontend
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
+    'http://localhost:3001',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:3001',
+    'https://frontend.vercel.app',
 ]
+
+CORS_ALLOW_CREDENTIALS = True
 
 # Django Channels — uses Redis as the message broker for WebSockets
 CHANNEL_LAYERS = {

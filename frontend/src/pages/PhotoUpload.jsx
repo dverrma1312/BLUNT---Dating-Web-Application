@@ -46,8 +46,8 @@ function PhotoUpload() {
 
         {/* header */}
         <h1 style={styles.title}>blunt.</h1>
-        <p style={styles.subtitle}>add your photos</p>
-        <p style={styles.hint}>add up to 4 photos</p>
+        <p style={styles.subtitle}>Add Your Photos</p>
+        <p style={styles.hint}>Add Up To 4 Photos</p>
 
         {/* error message */}
         {error && <p style={styles.error}>{error}</p>}

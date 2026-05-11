@@ -11,6 +11,7 @@ class UserIntentSerializer(serializers.ModelSerializer):
             'id',
             'what_are_you_doing',
             'looking_for',
+            'plan_flexibility',
             'updated_at',
         ]
         read_only_fields = ['updated_at']  # set automatically, user cannot change it

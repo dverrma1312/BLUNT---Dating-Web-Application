@@ -75,8 +75,8 @@ function Login() {
     <div style={styles.container}>
       <div style={styles.card}>
 
-        <h1 style={styles.title}>blunt.</h1>
-        <p style={styles.subtitle}>welcome back</p>
+        <h1 style={{...styles.title, fontSize: '48px'}}>blunt.</h1>
+        <p style={styles.subtitle}>Welcome Back!</p>
 
         {error && (
           <p style={{
@@ -99,10 +99,10 @@ function Login() {
               required
             />
             <button type="submit" disabled={loading}>
-              {loading ? 'sending...' : 'send otp'}
+              {loading ? 'Sending...' : 'Send OTP'}
             </button>
             <p style={styles.link} onClick={() => navigate('/register')}>
-              don't have an account? register
+              Don't have an account? Register
             </p>
           </form>
         ) : (

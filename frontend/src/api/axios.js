@@ -2,7 +2,7 @@ import axios from 'axios';  // imports axios library
 
 // create an axios instance with our Django backend URL
 const api = axios.create({
-  baseURL: 'https://blunt-dating-web-application-production.up.railway.app',  // Django runs here locally
+  baseURL: 'http://127.0.0.1:8000',  // Django runs locally
 });
 
 // before every request — attach the JWT token if it exists

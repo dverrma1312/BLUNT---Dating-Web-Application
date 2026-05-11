@@ -80,8 +80,8 @@ function Discovery() {
       <div style={styles.header}>
         <h1 style={styles.title}>blunt.</h1>
         <div style={styles.headerRight}>
-          <p style={styles.selectCount}>{selectCount}/5 selects</p>
-          <p style={styles.navLink} onClick={() => navigate('/matches')}>matches</p>
+          <p style={styles.selectCount}>{selectCount}/5 Selects</p>
+          <p style={styles.navLink} onClick={() => navigate('/matches')}>Matches</p>
         </div>
       </div>
 
@@ -105,11 +105,28 @@ function Discovery() {
             {/* profile info */}
             <div style={styles.profileInfo}>
               <div style={styles.profileTop}>
-                <h2 style={styles.name}>{profile.name}</h2>
+                <h2 style={styles.name}>
+                  {profile.name}, {profile.dob ? Math.floor((new Date() - new Date(profile.dob)) / (365.25 * 24 * 60 * 60 * 1000)) : ''}
+                </h2>
                 <p style={styles.city}>{profile.city}</p>
               </div>
               <p style={styles.description}>{profile.description}</p>
-              <p style={styles.category}>{profile.category}</p>
+
+              {/* pills: category, relationship, religion, sexuality */}
+              <div style={styles.pillsRow}>
+                <span style={styles.pill}>{profile.category}</span>
+                {profile.relationship_type && <span style={styles.pill}>{profile.relationship_type}</span>}
+                {profile.religion && <span style={styles.pill}>{profile.religion}</span>}
+                {profile.sexuality && <span style={styles.pill}>{profile.sexuality}</span>}
+              </div>
+
+              {/* lifestyle tags: drinks, smoke, weed, drugs */}
+              <div style={styles.pillsRow}>
+                {profile.alcohol && <span style={styles.smallPill}>Drinks</span>}
+                {profile.smoke && <span style={styles.smallPill}>Smokes</span>}
+                {profile.weed && <span style={styles.smallPill}>Weed</span>}
+                {profile.drugs && <span style={styles.smallPill}>Drugs</span>}
+              </div>
             </div>
 
             {/* action buttons — only show if not acted yet */}
@@ -219,7 +236,8 @@ const styles = {
   },
   name: {
     fontSize: '18px',
-    fontWeight: '500',
+    fontWeight: '700',
+    color: '#F5F5F5',
   },
   city: {
     fontSize: '13px',
@@ -233,6 +251,28 @@ const styles = {
   category: {
     fontSize: '12px',
     color: '#555555',
+  },
+  pillsRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '6px',
+    marginTop: '4px',
+  },
+  pill: {
+    backgroundColor: '#1a1a1a',
+    color: '#888888',
+    border: '1px solid #222222',
+    borderRadius: '999px',
+    padding: '2px 10px',
+    fontSize: '12px',
+  },
+  smallPill: {
+    backgroundColor: '#1a1a1a',
+    color: '#666666',
+    border: '1px solid #222222',
+    borderRadius: '999px',
+    padding: '2px 8px',
+    fontSize: '11px',
   },
   actions: {
     display: 'grid',

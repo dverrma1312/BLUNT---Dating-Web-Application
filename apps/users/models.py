@@ -40,12 +40,46 @@ class User(AbstractBaseUser, PermissionsMixin):
         ('F', 'Female'),
     ]
 
-    # category choices — the 4 intent categories of Blunt
+    # category choices — the 8 intent categories of Blunt
     CATEGORY_CHOICES = [
         ('hookup', 'Hookup'),
         ('hangout', 'Hangout'),
         ('smokeup', 'Smoke Up'),
         ('coffee', 'Coffee & Chill'),
+        ('nightout', 'Night Out'),
+        ('linkup', 'Link Up'),
+        ('tripout', 'Trip Out'),
+        ('workout', 'Workout'),
+    ]
+
+    # relationship type choices
+    RELATIONSHIP_CHOICES = [
+        ('monogamy', 'Monogamy'),
+        ('non-monogamy', 'Non-Monogamy'),
+    ]
+
+    # religion choices
+    RELIGION_CHOICES = [
+        ('Hindu', 'Hindu'),
+        ('Muslim', 'Muslim'),
+        ('Sikh', 'Sikh'),
+        ('Christian', 'Christian'),
+        ('Buddhist', 'Buddhist'),
+        ('Jain', 'Jain'),
+        ('Atheist', 'Atheist'),
+        ('Agnostic', 'Agnostic'),
+        ('Other', 'Other'),
+    ]
+
+    # sexuality choices
+    SEXUALITY_CHOICES = [
+        ('Straight', 'Straight'),
+        ('Gay', 'Gay'),
+        ('Lesbian', 'Lesbian'),
+        ('Bisexual', 'Bisexual'),
+        ('Pansexual', 'Pansexual'),
+        ('Asexual', 'Asexual'),
+        ('Prefer Not To Say', 'Prefer Not To Say'),
     ]
 
     phone_number = models.CharField(max_length=15, unique=True)  # phone number is unique — one account per number
@@ -54,6 +88,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     city = models.CharField(max_length=100)  # city they live in
     description = models.TextField(blank=True)  # long text about themselves, optional at first
     category = models.CharField(max_length=10, choices=CATEGORY_CHOICES)  # what they are looking for
+    relationship_type = models.CharField(max_length=20, choices=RELATIONSHIP_CHOICES, blank=True)
+    religion = models.CharField(max_length=20, choices=RELIGION_CHOICES, blank=True)
+    sexuality = models.CharField(max_length=20, choices=SEXUALITY_CHOICES, blank=True)
+    drugs = models.BooleanField(null=True, blank=True)
+    smoke = models.BooleanField(null=True, blank=True)
+    weed = models.BooleanField(null=True, blank=True)
+    alcohol = models.BooleanField(null=True, blank=True)
+    dob = models.DateField(null=True, blank=True)
 
     is_active = models.BooleanField(default=True)   # if False user is banned or deactivated
     is_staff = models.BooleanField(default=False)   # if True user can access admin panel

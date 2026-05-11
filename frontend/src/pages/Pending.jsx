@@ -30,11 +30,11 @@ function Pending() {
       <div style={styles.card}>
 
         <h1 style={styles.title}>blunt.</h1>
-        <p style={styles.heading}>you're on the list.</p>
+        <p style={styles.heading}>You're On The List.</p>
         <p style={styles.subtitle}>
-          our team is reviewing your profile. once approved you will get access to the app.
+          Our Team Is Reviewing Your Profile. Once Approved You Will Get Access To The App.
         </p>
-        <p style={styles.hint}>this usually takes a few hours.</p>
+        <p style={styles.hint}>This Usually Takes A Few Hours.</p>
 
       </div>
     </div>

@@ -7,12 +7,15 @@ function IntentSetup() {
 
   const [form, setForm] = useState({
     what_are_you_doing: '',
-    looking_for: '',
+    plan_flexibility: '',
   });
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [hasExistingIntent, setHasExistingIntent] = useState(false);
+
+  const [flexibilityHover, setFlexibilityHover] = useState(false);
+  const [flexibilityFocus, setFlexibilityFocus] = useState(false);
 
   useEffect(() => {
     async function fetchExistingIntent() {
@@ -20,7 +23,7 @@ function IntentSetup() {
         const res = await api.get('/api/intent/');
         setForm({
           what_are_you_doing: res.data.what_are_you_doing || '',
-          looking_for: res.data.looking_for || '',
+          plan_flexibility: res.data.plan_flexibility || '',
         });
         setHasExistingIntent(true);
       } catch (err) {
@@ -53,12 +56,26 @@ function IntentSetup() {
     }
   }
 
+  const selectStyle = {
+    appearance: 'none',
+    WebkitAppearance: 'none',
+    backgroundColor: flexibilityHover ? '#1a1a1a' : '#141414',
+    color: '#F5F5F5',
+    border: flexibilityFocus ? '1px solid #FFFFFF' : (flexibilityHover ? '1px solid #888888' : '1px solid #333333'),
+    borderRadius: '8px',
+    padding: '12px',
+    fontSize: '14px',
+    outline: 'none',
+    cursor: 'pointer',
+    width: '100%',
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.card}>
 
         <h1 style={styles.title}>blunt.</h1>
-        <p style={styles.subtitle}>what are you looking for tonight</p>
+        <p style={styles.subtitle}>What Are You Looking For Tonight?</p>
 
         {error && <p style={styles.error}>{error}</p>}
 
@@ -66,37 +83,31 @@ function IntentSetup() {
 
           <textarea
             name="what_are_you_doing"
-            placeholder="what are you doing tonight?"
+            placeholder="How's The Plan Tonight?"
             value={form.what_are_you_doing}
             onChange={handleChange}
             rows={3}
             style={styles.textarea}
           />
 
-          <p style={styles.label}>i am looking for</p>
-          <div style={styles.categoryGrid}>
-            {[
-              { value: 'hookup', label: 'hookup' },
-              { value: 'hangout', label: 'hangout' },
-              { value: 'smokeup', label: 'smoke up' },
-              { value: 'coffee', label: 'coffee & chill' },
-            ].map(cat => (
-              <div
-                key={cat.value}
-                onClick={() => setForm({ ...form, looking_for: cat.value })}
-                style={{
-                  ...styles.categoryCard,
-                  borderColor: form.looking_for === cat.value ? '#F5F5F5' : '#222222',
-                  color: form.looking_for === cat.value ? '#F5F5F5' : '#888888',
-                }}
-              >
-                {cat.label}
-              </div>
-            ))}
+          <div onMouseEnter={() => setFlexibilityHover(true)} onMouseLeave={() => setFlexibilityHover(false)}>
+            <select
+              name="plan_flexibility"
+              value={form.plan_flexibility}
+              onChange={handleChange}
+              onFocus={() => setFlexibilityFocus(true)}
+              onBlur={() => setFlexibilityFocus(false)}
+              style={selectStyle}
+            >
+              <option value="">Plan Flexibility</option>
+              <option value="Fixed">Fixed</option>
+              <option value="I Don't Know">I Don't Know</option>
+              <option value="Up To You">Up To You</option>
+            </select>
           </div>
 
-          <button type="submit" disabled={loading || !form.looking_for}>
-            {loading ? 'saving...' : 'continue'}
+          <button type="submit" disabled={loading}>
+            {loading ? 'Saving...' : 'Continue'}
           </button>
 
         </form>
@@ -145,24 +156,6 @@ const styles = {
   },
   textarea: {
     resize: 'none',
-  },
-  label: {
-    fontSize: '13px',
-    color: '#888888',
-  },
-  categoryGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '8px',
-  },
-  categoryCard: {
-    padding: '16px',
-    borderRadius: '8px',
-    border: '1px solid #222222',
-    fontSize: '14px',
-    cursor: 'pointer',
-    textAlign: 'center',
-    transition: 'border-color 0.2s, color 0.2s',
   },
 };
 
