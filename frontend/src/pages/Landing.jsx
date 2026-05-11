@@ -1,5 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+
+const navLinkHoverStyle = `
+  .nav-link:hover { color: #FFFFFF !important; }
+`;
 
 const categories = ['Hangout', 'Smokeup', 'Coffee', 'Hookup', 'Nightout', 'Linkup', 'Tripout', 'Workout'];
 
@@ -7,13 +11,23 @@ function Landing() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleMouseEnter = () => {
-    setDropdownOpen(true);
-  };
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') setDropdownOpen(false);
+    };
+    document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, []);
 
-  const handleMouseLeave = () => {
-    setDropdownOpen(false);
-  };
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('.categories-dropdown')) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   const handleCategorySelect = () => {
     navigate('/register');
@@ -21,25 +35,38 @@ function Landing() {
 
   return (
     <div style={styles.container}>
+      <style>{navLinkHoverStyle}</style>
       {/* Header/Navbar */}
       <header style={styles.header}>
         <nav style={styles.nav}>
-          <Link to="#" style={styles.navLink}>Why BLUNT</Link>
+          <Link to="#" className="nav-link" style={styles.navLink}>Why BLUNT</Link>
           <div
+            className="categories-dropdown"
             style={styles.dropdownContainer}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
           >
-            <span style={styles.navLink}>
+            <span
+              className="nav-link"
+              style={styles.navLink}
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              onMouseEnter={() => setDropdownOpen(true)}
+            >
               Categories
             </span>
             {dropdownOpen && (
-              <div style={styles.dropdown} onMouseEnter={handleMouseEnter}>
+              <div style={styles.dropdown}>
                 {categories.map((cat) => (
                   <div
                     key={cat}
                     style={styles.dropdownItem}
                     onClick={handleCategorySelect}
+                    onMouseEnter={(e) => {
+                      e.target.style.color = '#FFFFFF';
+                      e.target.style.backgroundColor = '#1a1a1a';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.color = '#F5F5F5';
+                      e.target.style.backgroundColor = 'transparent';
+                    }}
                   >
                     {cat}
                   </div>
@@ -47,8 +74,8 @@ function Landing() {
               </div>
             )}
           </div>
-          <Link to="#" style={styles.navLink}>Safety</Link>
-          <Link to="#" style={styles.navLink}>Support</Link>
+          <Link to="#" className="nav-link" style={styles.navLink}>Safety</Link>
+          <Link to="#" className="nav-link" style={styles.navLink}>Support</Link>
         </nav>
       </header>
 
@@ -95,6 +122,7 @@ const styles = {
     textDecoration: 'none',
     transition: 'color 0.2s',
     fontWeight: '400',
+    cursor: 'pointer',
   },
   dropdownContainer: {
     position: 'relative',
@@ -104,7 +132,7 @@ const styles = {
     top: '100%',
     left: '50%',
     transform: 'translateX(-50%)',
-    marginTop: '12px',
+    marginTop: '0',
     backgroundColor: '#141414',
     border: '1px solid #222222',
     borderRadius: '8px',
@@ -117,7 +145,7 @@ const styles = {
     color: '#F5F5F5',
     padding: '10px 16px',
     cursor: 'pointer',
-    transition: 'background-color 0.2s',
+    transition: 'background-color 0.2s, color 0.2s',
   },
   hero: {
     minHeight: '100vh',
