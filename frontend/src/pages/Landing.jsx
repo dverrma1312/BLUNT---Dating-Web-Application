@@ -65,7 +65,7 @@ const styles = {
   },
   heroLogo: {
     fontFamily: "'Inter', sans-serif",
-    fontSize: 'clamp(100px, 25vw, 280px)',
+    fontSize: 'clamp(80px, 20vw, 200px)',
     fontWeight: '900',
     color: '#FFFFFF',
     letterSpacing: '-0.02em',
