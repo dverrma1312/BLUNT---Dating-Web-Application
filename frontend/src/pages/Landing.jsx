@@ -1,31 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const navLinkHoverStyle = `
   .nav-link:hover { color: #FFFFFF !important; }
 `;
 
-const categories = ['Hangout', 'Smokeup', 'Coffee', 'Hookup', 'Nightout', 'Linkup', 'Tripout', 'Workout'];
-
 function Landing() {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleCategorySelect = () => {
-    navigate('/register');
-  };
-
   return (
     <div style={styles.container}>
       <style>{navLinkHoverStyle}</style>
@@ -33,36 +12,7 @@ function Landing() {
       <header style={styles.header}>
         <nav style={styles.nav}>
           <Link to="#" className="nav-link" style={styles.navLink}>Why BLUNT</Link>
-          <div ref={dropdownRef} style={styles.dropdownWrapper}>
-            <span
-              className="nav-link"
-              style={styles.navLink}
-              onClick={() => setIsOpen(!isOpen)}
-            >
-              Categories
-            </span>
-            {isOpen && (
-              <div style={styles.dropdown}>
-                {categories.map((cat) => (
-                  <div
-                    key={cat}
-                    style={styles.dropdownItem}
-                    onClick={handleCategorySelect}
-                    onMouseEnter={(e) => {
-                      e.target.style.color = '#FFFFFF';
-                      e.target.style.backgroundColor = '#1a1a1a';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.color = '#F5F5F5';
-                      e.target.style.backgroundColor = 'transparent';
-                    }}
-                  >
-                    {cat}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <span className="nav-link" style={styles.navLink}>Categories</span>
           <Link to="#" className="nav-link" style={styles.navLink}>Safety</Link>
           <Link to="#" className="nav-link" style={styles.navLink}>Support</Link>
         </nav>
@@ -112,29 +62,6 @@ const styles = {
     transition: 'color 0.2s',
     fontWeight: '400',
     cursor: 'pointer',
-  },
-  dropdownWrapper: {
-    position: 'relative',
-  },
-  dropdown: {
-    position: 'absolute',
-    top: '100%',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    marginTop: '0',
-    backgroundColor: '#141414',
-    border: '1px solid #222222',
-    borderRadius: '8px',
-    padding: '8px 0',
-    minWidth: '140px',
-    zIndex: 1000,
-  },
-  dropdownItem: {
-    fontSize: '14px',
-    color: '#F5F5F5',
-    padding: '10px 16px',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s, color 0.2s',
   },
   hero: {
     minHeight: '100vh',
