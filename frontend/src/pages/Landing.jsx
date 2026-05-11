@@ -5,20 +5,18 @@ function Landing() {
     <div style={styles.container}>
       {/* Header/Navbar */}
       <header style={styles.header}>
-        <div style={styles.logo}>BLUNT</div>
         <nav style={styles.nav}>
-          <Link to="#" style={styles.navLink}>Categories</Link>
           <Link to="#" style={styles.navLink}>Why BLUNT</Link>
+          <Link to="#" style={styles.navLink}>Categories</Link>
           <Link to="#" style={styles.navLink}>Safety</Link>
           <Link to="#" style={styles.navLink}>Support</Link>
         </nav>
-        <div style={styles.placeholder}></div>
       </header>
 
       {/* Hero Section */}
       <section style={styles.hero}>
-        {/* Big BLUNT logo in center */}
-        <h1 style={styles.heroLogo}>BLUNT</h1>
+        {/* Big BLUNT. logo in center */}
+        <h1 style={styles.heroLogo}>BLUNT.</h1>
 
         {/* Login/Signup links in center */}
         <div style={styles.authLinks}>
@@ -38,7 +36,7 @@ const styles = {
   header: {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     padding: '20px 48px',
     position: 'fixed',
     top: 0,
@@ -46,24 +44,16 @@ const styles = {
     right: 0,
     zIndex: 100,
   },
-  logo: {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#F5F5F5',
-    letterSpacing: '-1px',
-  },
   nav: {
     display: 'flex',
-    gap: '32px',
+    gap: '48px',
   },
   navLink: {
     fontSize: '14px',
     color: '#888888',
     textDecoration: 'none',
     transition: 'color 0.2s',
-  },
-  placeholder: {
-    width: '80px',
+    fontWeight: '400',
   },
   hero: {
     minHeight: '100vh',
@@ -74,10 +64,11 @@ const styles = {
     position: 'relative',
   },
   heroLogo: {
-    fontSize: 'clamp(120px, 30vw, 320px)',
-    fontWeight: '700',
-    color: '#141414',
-    letterSpacing: '-8px',
+    fontFamily: "'Playfair Display', serif",
+    fontSize: 'clamp(100px, 25vw, 280px)',
+    fontWeight: '600',
+    color: '#FFFFFF',
+    letterSpacing: '-2px',
     userSelect: 'none',
     marginBottom: '32px',
   },
@@ -93,6 +84,7 @@ const styles = {
     padding: '12px 24px',
     border: '1px solid #333333',
     borderRadius: '8px',
+    fontWeight: '400',
   },
   authLinkPrimary: {
     fontSize: '16px',
