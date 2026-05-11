@@ -1,42 +1,38 @@
-import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const categories = ['Hangout', 'Smokeup', 'Coffee', 'Hookup', 'Nightout', 'Linkup', 'Tripout', 'Workout'];
 
 function Landing() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownOpen(false);
-      }
-    }
+  const handleMouseEnter = () => {
+    setDropdownOpen(true);
+  };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleCategoryClick = () => {
-    setDropdownOpen(!dropdownOpen);
+  const handleMouseLeave = () => {
+    setDropdownOpen(false);
   };
 
   const handleCategorySelect = () => {
-    setDropdownOpen(false);
+    navigate('/register');
   };
 
   return (
     <div style={styles.container}>
       {/* Header/Navbar */}
       <header style={styles.header}>
-        <nav style={styles.nav} ref={dropdownRef}>
+        <nav style={styles.nav}>
           <Link to="#" style={styles.navLink}>Why BLUNT</Link>
-          <div style={styles.dropdownContainer}>
-            <span
-              style={{ ...styles.navLink, cursor: 'pointer', color: dropdownOpen ? '#F5F5F5' : '#888888' }}
-              onClick={handleCategoryClick}
-            >
+          <div
+            style={styles.dropdownContainer}
+            ref={dropdownRef}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <span style={styles.navLink}>
               Categories
             </span>
             {dropdownOpen && (
