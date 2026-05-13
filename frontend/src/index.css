@@ -1,6 +1,8 @@
 /* import Inter and Playfair Display fonts from Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
 
 /* reset all default browser styles */
 * {
@@ -15,6 +17,7 @@ body {
   color: #F5F5F5;              /* off white text */
   font-family: 'Inter', sans-serif;  /* Inter font everywhere */
   -webkit-font-smoothing: antialiased;  /* smoother fonts on mac */
+  cursor: none;
 }
 
 /* global input styles */
@@ -60,4 +63,91 @@ button:hover {
 a {
   color: #F5F5F5;
   text-decoration: none;
+}
+
+/* Ember pulse animation for ember tip */
+@keyframes emberPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px 10px rgba(232, 81, 42, 0.6);
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    box-shadow: 0 0 35px 20px rgba(232, 81, 42, 0.8);
+    transform: translateY(-50%) scale(1.2);
+  }
+}
+
+/* Scroll drop animation for scroll indicator */
+@keyframes scrollDrop {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  70% {
+    opacity: 0.5;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+}
+
+/* Orbit rotation animation for category pills */
+@keyframes orbitRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Spin animation for stamp */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Footer hover effects */
+a:hover {
+  color: #E8512A !important;
+}
+
+/* Hide default cursor globally */
+* {
+  cursor: none !important;
+}
+
+/* Hide default cursor and use custom cursor */
+* {
+  cursor: none !important;
+}
+
+/* Dot pulse animation for pending page */
+@keyframes dotPulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+/* Slide up and fade in animation */
+@keyframes slideUpFade {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

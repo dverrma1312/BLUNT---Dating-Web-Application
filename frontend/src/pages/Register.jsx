@@ -1,12 +1,11 @@
-import { useState, useRef } from 'react';  // imports useState for form data
+import { useState } from 'react';
 import Select from 'react-select';
-import { useNavigate } from 'react-router-dom';  // imports useNavigate for redirecting
-import api from '../api/axios';  // imports our axios instance
+import { useNavigate, Link } from 'react-router-dom';
+import api from '../api/axios';
 
 function Register() {
-  const navigate = useNavigate();  // used to redirect after registration
+  const navigate = useNavigate();
 
-  // form state — stores all input values
   const [form, setForm] = useState({
     phone_number: '',
     name: '',
@@ -15,241 +14,235 @@ function Register() {
     category: '',
   });
 
-  const [error, setError] = useState('');  // stores error message
-  const [genderHover, setGenderHover] = useState(false);
-  const [genderFocus, setGenderFocus] = useState(false);
-  const [categoryHover, setCategoryHover] = useState(false);
-  const [categoryFocus, setCategoryFocus] = useState(false);
-  const [cityHover, setCityHover] = useState(false);
-  const [cityFocus, setCityFocus] = useState(false);
-  const [loading, setLoading] = useState(false);  // tracks if request is in progress
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // updates form state when any input changes
   function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });  // spread existing form data and update changed field
+    setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  // handles city selection
   function handleCityChange(selectedOption) {
     setForm({ ...form, city: selectedOption ? selectedOption.value : '' });
   }
 
-  // handles form submission
   async function handleSubmit(e) {
-    e.preventDefault();  // prevents page reload on form submit
+    e.preventDefault();
 
     if (!form.city) {
       setError('Please select a city.');
       return;
     }
 
-    setError('');  // clear previous errors
-    setLoading(true);  // show loading state
+    setError('');
+    setLoading(true);
 
     try {
-      await api.post('/api/users/register/', form);  // send registration data to backend
-      localStorage.setItem('phone_number', form.phone_number);  // save phone number for OTP page
-      navigate('/verify-otp');  // redirect to OTP verification page
+      await api.post('/api/users/register/', form);
+      localStorage.setItem('phone_number', form.phone_number);
+      navigate('/verify-otp');
     } catch (err) {
-      console.error('Registration error:', err.response?.status, err.response?.data);
-      setError(err.response?.data?.error || 'Registration failed. Please try again.');  // show error message
+      console.log('Registration error full:', JSON.stringify(err.response?.data));
+      setError(err.response?.data?.error || 'Registration failed. Please try again.');
     } finally {
-      setLoading(false);  // hide loading state
+      setLoading(false);
     }
   }
 
   return (
     <div style={styles.container}>
-      <div style={styles.card}>
-        
-        {/* header */}
-        <h1 style={styles.title}>blunt.</h1>
-        <p style={styles.subtitle}>Create Your Account</p>
+      {/* Grain texture overlay */}
+      <div style={styles.grain}></div>
 
-        {/* error message */}
-        {error && <p style={styles.error}>{error}</p>}
+      {/* Blunt. wordmark with ember dot */}
+      <h1 style={styles.logo}>
+        blunt<span style={styles.period}>.</span>
+        <span style={styles.emberDot}></span>
+      </h1>
 
-        {/* registration form */}
-        <form onSubmit={handleSubmit} style={styles.form}>
-          
-          <input
-            name="phone_number"
-            type="tel"
-            placeholder="Phone Number"
-            value={form.phone_number}
-            onChange={handleChange}
-            required
-          />
+      {/* Subtext */}
+      <p style={styles.subtext}>Create your account.</p>
 
-          <input
-            name="name"
-            type="text"
-            placeholder="Your Name"
-            value={form.name}
-            onChange={handleChange}
-            required
-          />
+      {/* Error message */}
+      {error && (
+        <p style={styles.error}>{error}</p>
+      )}
 
-          <div
-            onMouseEnter={() => setGenderHover(true)}
-            onMouseLeave={() => setGenderHover(false)}
-          >
-            <select
-              name="gender"
-              value={form.gender}
-              onChange={handleChange}
-              onFocus={() => setGenderFocus(true)}
-              onBlur={() => setGenderFocus(false)}
-              required
-              style={{
-                ...styles.select,
-                border: genderFocus ? '1px solid #FFFFFF' : (genderHover ? '1px solid #888888' : '1px solid #333333'),
-                backgroundColor: genderHover ? '#1a1a1a' : '#141414',
-              }}
-            >
-              <option value="">Select Gender</option>
-              <option value="M">Male</option>
-              <option value="F">Female</option>
-            </select>
-          </div>
+      {/* Registration form */}
+      <form onSubmit={handleSubmit} style={styles.form}>
+        <input
+          name="phone_number"
+          type="tel"
+          placeholder="Phone Number"
+          value={form.phone_number}
+          onChange={handleChange}
+          required
+          style={styles.input}
+        />
 
-          <div
-            onMouseEnter={() => setCityHover(true)}
-            onMouseLeave={() => setCityHover(false)}
-          >
-            <Select
-              options={[
-                { value: 'Chandigarh', label: 'Chandigarh' },
-                { value: 'Mohali', label: 'Mohali' },
-                { value: 'Gurgaon', label: 'Gurgaon' },
-                { value: 'Noida', label: 'Noida' },
-                { value: 'Delhi', label: 'Delhi' },
-              ]}
-              value={form.city ? { value: form.city, label: form.city } : null}
-              onChange={handleCityChange}
-              onFocus={() => setCityFocus(true)}
-              onBlur={() => setCityFocus(false)}
-              onMenuOpen={() => setCityFocus(true)}
-              onMenuClose={() => setCityFocus(false)}
-              placeholder="Your City"
-              isClearable
-              required
-              styles={{
-              control: (base, state) => ({
-                ...base,
-                backgroundColor: cityHover ? '#1a1a1a' : '#141414',
-                border: state.isFocused ? '1px solid #FFFFFF' : (cityHover ? '1px solid #888888' : '1px solid #333333'),
-                borderRadius: '8px',
-                padding: '2px',
-                minHeight: '44px',
-                boxShadow: 'none',
-                '&:hover': {
-                  borderColor: '#888888',
-                },
-              }),
-              input: (base) => ({
-                ...base,
-                color: '#F5F5F5',
-              }),
-              placeholder: (base) => ({
-                ...base,
-                color: '#888888',
-              }),
-              singleValue: (base) => ({
-                ...base,
-                color: '#F5F5F5',
-              }),
-              menu: (base) => ({
-                ...base,
-                backgroundColor: '#141414',
-                border: '1px solid #333333',
-                borderRadius: '8px',
-                marginTop: '4px',
-              }),
-              menuList: (base) => ({
-                ...base,
-                backgroundColor: '#141414',
-              }),
-              option: (base, state) => ({
-                ...base,
-                backgroundColor: state.isFocused || state.isHovered ? '#1a1a1a' : '#141414',
-                color: '#F5F5F5',
-                cursor: 'pointer',
-                '&:hover': {
-                  backgroundColor: '#1a1a1a',
-                },
-              }),
-              dropdownIndicator: (base) => ({
-                ...base,
-                color: '#888888',
-              }),
-              indicatorSeparator: (base) => ({
-                ...base,
-                display: 'none',
-              }),
-            }}
-            />
-          </div>
+        <input
+          name="name"
+          type="text"
+          placeholder="Your Name"
+          value={form.name}
+          onChange={handleChange}
+          required
+          style={styles.input}
+        />
 
-          <div
-            onMouseEnter={() => setCategoryHover(true)}
-            onMouseLeave={() => setCategoryHover(false)}
-          >
-            <select
-              name="category"
-              value={form.category}
-              onChange={handleChange}
-              onFocus={() => setCategoryFocus(true)}
-              onBlur={() => setCategoryFocus(false)}
-              required
-              style={{
-                ...styles.select,
-                border: categoryFocus ? '1px solid #FFFFFF' : (categoryHover ? '1px solid #888888' : '1px solid #333333'),
-                backgroundColor: categoryHover ? '#1a1a1a' : '#141414',
-              }}
-            >
-            <option value="">What Are You Here For?</option>
-            <option value="hookup">Hookup</option>
-            <option value="hangout">Hangout</option>
-            <option value="smokeup">Smokeup</option>
-            <option value="coffee">Coffee</option>
-            </select>
-          </div>
+        <select
+          name="gender"
+          value={form.gender}
+          onChange={handleChange}
+          required
+          style={styles.select}
+        >
+          <option value="" style={styles.selectOption}>Select Gender</option>
+          <option value="M" style={styles.selectOption}>Male</option>
+          <option value="F" style={styles.selectOption}>Female</option>
+        </select>
 
-          <button type="submit" disabled={loading}>
-            {loading ? 'Creating account...' : 'Continue'}
-          </button>
+        <Select
+          options={[
+            { value: 'Chandigarh', label: 'Chandigarh' },
+            { value: 'Mohali', label: 'Mohali' },
+            { value: 'Gurgaon', label: 'Gurgaon' },
+            { value: 'Noida', label: 'Noida' },
+            { value: 'Delhi', label: 'Delhi' },
+          ]}
+          value={form.city ? { value: form.city, label: form.city } : null}
+          onChange={handleCityChange}
+          placeholder="Your City"
+          isClearable
+          required
+          styles={{
+            control: (base, state) => ({
+              ...base,
+              backgroundColor: '#141414',
+              border: state.isFocused ? '1px solid #444444' : '1px solid #222222',
+              borderRadius: '4px',
+              padding: '2px',
+              minHeight: '48px',
+              boxShadow: 'none',
+              '&:hover': {
+                borderColor: '#444444',
+              },
+            }),
+            input: (base) => ({
+              ...base,
+              color: '#F5F5F5',
+            }),
+            placeholder: (base) => ({
+              ...base,
+              color: '#555555',
+            }),
+            singleValue: (base) => ({
+              ...base,
+              color: '#F5F5F5',
+            }),
+            menu: (base) => ({
+              ...base,
+              backgroundColor: '#141414',
+              border: '1px solid #222222',
+              borderRadius: '4px',
+              marginTop: '4px',
+            }),
+            menuList: (base) => ({
+              ...base,
+              backgroundColor: '#141414',
+            }),
+            option: (base, state) => ({
+              ...base,
+              backgroundColor: state.isFocused ? '#1a1a1a' : '#141414',
+              color: '#F5F5F5',
+              cursor: 'none',
+            }),
+            dropdownIndicator: (base) => ({
+              ...base,
+              color: '#888888',
+            }),
+            indicatorSeparator: (base) => ({
+              ...base,
+              display: 'none',
+            }),
+          }}
+        />
 
-        </form>
+        <select
+          name="category"
+          value={form.category}
+          onChange={handleChange}
+          required
+          style={styles.select}
+        >
+          <option value="" style={styles.selectOption}>What Are You Here For?</option>
+          <option value="hookup" style={styles.selectOption}>Hookup</option>
+          <option value="hangout" style={styles.selectOption}>Hangout</option>
+          <option value="smokeup" style={styles.selectOption}>Smokeup</option>
+          <option value="coffee" style={styles.selectOption}>Coffee</option>
+        </select>
 
-      </div>
+        <button type="submit" disabled={loading} style={styles.button}>
+          {loading ? 'Creating account...' : 'Continue'}
+        </button>
+
+        <p style={styles.linkText}>
+          Already have an account? <Link to="/login" style={styles.link}>Log In</Link>
+        </p>
+      </form>
     </div>
   );
 }
 
-// styles
 const styles = {
   container: {
     minHeight: '100vh',
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     padding: '24px',
+    position: 'relative',
   },
-  card: {
-    width: '100%',
-    maxWidth: '400px',
+  grain: {
+    position: 'fixed',
+    inset: 0,
+    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+    opacity: 0.05,
+    pointerEvents: 'none',
+    zIndex: 0,
   },
-  title: {
-    fontSize: '32px',
-    fontWeight: '600',
+  logo: {
+    fontFamily: "'Bebas Neue', sans-serif",
+    fontSize: '64px',
+    fontWeight: 400,
+    color: '#FFFFFF',
+    letterSpacing: '0.02em',
+    position: 'relative',
     marginBottom: '8px',
-    letterSpacing: '-1px',
+    zIndex: 1,
   },
-  subtitle: {
-    fontSize: '14px',
+  period: {
+    position: 'relative',
+  },
+  emberDot: {
+    position: 'absolute',
+    width: '8px',
+    height: '8px',
+    backgroundColor: '#E8512A',
+    borderRadius: '50%',
+    right: '-6px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    animation: 'emberPulse 2s ease-in-out infinite',
+    boxShadow: '0 0 15px 8px rgba(232, 81, 42, 0.5)',
+  },
+  subtext: {
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: '16px',
+    fontWeight: 300,
     color: '#888888',
     marginBottom: '32px',
+    zIndex: 1,
   },
   error: {
     fontSize: '13px',
@@ -259,24 +252,73 @@ const styles = {
     backgroundColor: '#1a0000',
     borderRadius: '8px',
     border: '1px solid #330000',
+    zIndex: 1,
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',  // space between inputs
+    gap: '12px',
+    width: '100%',
+    maxWidth: '320px',
+    zIndex: 1,
+  },
+  input: {
+    backgroundColor: '#141414',
+    border: '1px solid #222222',
+    borderRadius: '4px',
+    padding: '14px 16px',
+    color: '#FFFFFF',
+    fontSize: '16px',
+    fontFamily: "'DM Sans', sans-serif",
+    outline: 'none',
+    width: '100%',
+    transition: 'border-color 0.2s',
   },
   select: {
     appearance: 'none',
     WebkitAppearance: 'none',
     backgroundColor: '#141414',
     color: '#F5F5F5',
-    border: '1px solid #333333',
-    borderRadius: '8px',
-    padding: '12px',
-    fontSize: '14px',
+    border: '1px solid #222222',
+    borderRadius: '4px',
+    padding: '14px 16px',
+    fontSize: '16px',
+    fontFamily: "'DM Sans', sans-serif",
     outline: 'none',
-    cursor: 'pointer',
+    cursor: 'none',
+    width: '100%',
+    transition: 'border-color 0.2s',
+  },
+  selectOption: {
+    backgroundColor: '#141414',
+    color: '#F5F5F5',
+  },
+  button: {
+    backgroundColor: '#FFFFFF',
+    color: '#0A0A0A',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '14px 24px',
+    fontSize: '16px',
+    fontWeight: 500,
+    fontFamily: "'DM Sans', sans-serif",
+    cursor: 'none',
+    width: '100%',
+    marginTop: '8px',
+  },
+  linkText: {
+    fontSize: '14px',
+    color: '#888888',
+    textAlign: 'center',
+    cursor: 'none',
+    marginTop: '16px',
+    fontFamily: "'DM Sans', sans-serif",
+  },
+  link: {
+    color: '#FFFFFF',
+    textDecoration: 'none',
+    transition: 'color 0.2s',
   },
 };
 
-export default Register;  // export so App.js can use it
+export default Register;

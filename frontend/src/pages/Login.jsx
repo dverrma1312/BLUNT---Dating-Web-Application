@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
 
 function Login() {
@@ -33,7 +33,7 @@ function Login() {
 
     try {
       await api.post('/api/users/send-otp/', { phone_number: phone });
-      setError('OTP resent successfully.');  // use error state as info message
+      setError('OTP resent successfully.');
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to resend OTP.');
     } finally {
@@ -73,62 +73,72 @@ function Login() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.card}>
+      {/* Grain texture overlay */}
+      <div style={styles.grain}></div>
 
-        <h1 style={{...styles.title, fontSize: '48px'}}>blunt.</h1>
-        <p style={styles.subtitle}>Welcome Back!</p>
+      {/* Blunt. wordmark with ember dot */}
+      <h1 style={styles.logo}>
+        blunt<span style={styles.period}>.</span>
+        <span style={styles.emberDot}></span>
+      </h1>
 
-        {error && (
-          <p style={{
-            ...styles.error,
-            color: error.includes('resent') ? '#44ff88' : '#ff4444',
-            backgroundColor: error.includes('resent') ? '#001a0a' : '#1a0000',
-            border: error.includes('resent') ? '1px solid #003300' : '1px solid #330000',
-          }}>
-            {error}
+      {/* Subtext */}
+      <p style={styles.subtext}>Welcome back.</p>
+
+      {error && (
+        <p style={{
+          ...styles.error,
+          color: error.includes('resent') ? '#44ff88' : '#ff4444',
+          backgroundColor: error.includes('resent') ? '#001a0a' : '#1a0000',
+          border: error.includes('resent') ? '1px solid #003300' : '1px solid #330000',
+        }}>
+          {error}
+        </p>
+      )}
+
+      {!otpSent ? (
+        <form onSubmit={handleSendOTP} style={styles.form}>
+          <input
+            type="tel"
+            placeholder="phone number"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            required
+            style={styles.input}
+          />
+          <button type="submit" disabled={loading} style={styles.button}>
+            {loading ? 'Sending...' : 'Send OTP'}
+          </button>
+          <p style={styles.linkText}>
+            Don't have an account? <Link to="/register" style={styles.link}>Register</Link>
           </p>
-        )}
-
-        {!otpSent ? (
-          <form onSubmit={handleSendOTP} style={styles.form}>
-            <input
-              type="tel"
-              placeholder="phone number"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-            />
-            <button type="submit" disabled={loading}>
-              {loading ? 'Sending...' : 'Send OTP'}
-            </button>
-            <p style={styles.link} onClick={() => navigate('/register')}>
-              Don't have an account? Register
-            </p>
-          </form>
-        ) : (
-          <form onSubmit={handleVerify} style={styles.form}>
-            <p style={styles.phone}>{phone}</p>
-            <input
-              type="text"
-              placeholder="enter otp"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              maxLength={6}
-              required
-            />
-            <button type="submit" disabled={loading}>
-              {loading ? 'verifying...' : 'verify'}
-            </button>
-            <p style={styles.link} onClick={handleResendOTP}>
-              {resending ? 'resending...' : 'resend otp'}
-            </p>
-            <p style={styles.link} onClick={() => setOtpSent(false)}>
-              change number
-            </p>
-          </form>
-        )}
-
-      </div>
+          <p style={styles.termsText}>
+            By signing up, you agree to our <a href="#" onClick={(e) => e.preventDefault()} style={styles.termsLink}>Terms</a>. See how we use your data in our <a href="#" onClick={(e) => e.preventDefault()} style={styles.termsLink}>Privacy Policy</a>.
+          </p>
+        </form>
+      ) : (
+        <form onSubmit={handleVerify} style={styles.form}>
+          <p style={styles.phoneDisplay}>{phone}</p>
+          <input
+            type="text"
+            placeholder="enter otp"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            maxLength={6}
+            required
+            style={styles.input}
+          />
+          <button type="submit" disabled={loading} style={styles.button}>
+            {loading ? 'Verifying...' : 'Verify'}
+          </button>
+          <p style={styles.linkText} onClick={handleResendOTP}>
+            {resending ? 'Resending...' : 'Resend OTP'}
+          </p>
+          <p style={styles.linkText} onClick={() => setOtpSent(false)}>
+            Change number
+          </p>
+        </form>
+      )}
     </div>
   );
 }
@@ -137,47 +147,126 @@ const styles = {
   container: {
     minHeight: '100vh',
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     padding: '24px',
+    position: 'relative',
   },
-  card: {
-    width: '100%',
-    maxWidth: '400px',
+  grain: {
+    position: 'fixed',
+    inset: 0,
+    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+    opacity: 0.05,
+    pointerEvents: 'none',
+    zIndex: 0,
   },
-  title: {
-    fontSize: '32px',
-    fontWeight: '600',
+  logo: {
+    fontFamily: "'Bebas Neue', sans-serif",
+    fontSize: '64px',
+    fontWeight: 400,
+    color: '#FFFFFF',
+    letterSpacing: '0.02em',
+    position: 'relative',
     marginBottom: '8px',
-    letterSpacing: '-1px',
+    zIndex: 1,
   },
-  subtitle: {
-    fontSize: '14px',
+  period: {
+    position: 'relative',
+  },
+  emberDot: {
+    position: 'absolute',
+    width: '8px',
+    height: '8px',
+    backgroundColor: '#E8512A',
+    borderRadius: '50%',
+    right: '-6px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    animation: 'emberPulse 2s ease-in-out infinite',
+    boxShadow: '0 0 15px 8px rgba(232, 81, 42, 0.5)',
+  },
+  subtext: {
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: '16px',
+    fontWeight: 300,
     color: '#888888',
     marginBottom: '32px',
-  },
-  phone: {
-    fontSize: '16px',
-    fontWeight: '500',
-    marginBottom: '8px',
+    zIndex: 1,
   },
   error: {
     fontSize: '13px',
     marginBottom: '16px',
     padding: '12px',
     borderRadius: '8px',
+    zIndex: 1,
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
+    width: '100%',
+    maxWidth: '320px',
+    zIndex: 1,
   },
-  link: {
-    fontSize: '13px',
+  input: {
+    backgroundColor: '#141414',
+    border: '1px solid #222222',
+    borderRadius: '4px',
+    padding: '14px 16px',
+    color: '#FFFFFF',
+    fontSize: '16px',
+    fontFamily: "'DM Sans', sans-serif",
+    outline: 'none',
+    width: '100%',
+  },
+  button: {
+    backgroundColor: '#FFFFFF',
+    color: '#0A0A0A',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '14px 24px',
+    fontSize: '16px',
+    fontWeight: 500,
+    fontFamily: "'DM Sans', sans-serif",
+    cursor: 'none',
+    width: '100%',
+  },
+  linkText: {
+    fontSize: '14px',
     color: '#888888',
     textAlign: 'center',
-    cursor: 'pointer',
-    marginTop: '4px',
+    cursor: 'none',
+    marginTop: '8px',
+    fontFamily: "'DM Sans', sans-serif",
+  },
+  link: {
+    color: '#FFFFFF',
+    textDecoration: 'none',
+    transition: 'color 0.2s',
+  },
+  termsText: {
+    fontSize: '11px',
+    color: '#555555',
+    textAlign: 'center',
+    maxWidth: '320px',
+    marginTop: '24px',
+    fontFamily: "'DM Sans', sans-serif",
+    lineHeight: 1.5,
+    zIndex: 1,
+  },
+  termsLink: {
+    color: '#888888',
+    textDecoration: 'underline',
+    transition: 'color 0.2s',
+  },
+  phoneDisplay: {
+    fontSize: '16px',
+    fontWeight: 500,
+    color: '#FFFFFF',
+    marginBottom: '8px',
+    textAlign: 'center',
+    fontFamily: "'DM Sans', sans-serif",
   },
 };
 

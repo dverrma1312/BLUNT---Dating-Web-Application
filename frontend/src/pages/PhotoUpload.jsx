@@ -1,40 +1,44 @@
-import { useState } from 'react';  // imports useState for managing photos
-import { useNavigate } from 'react-router-dom';  // imports useNavigate for redirecting
-import api from '../api/axios';  // imports our axios instance
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../api/axios';
 
 function PhotoUpload() {
-  const navigate = useNavigate();  // used to redirect after photo upload
+  const navigate = useNavigate();
 
-  const [photos, setPhotos] = useState([]);  // stores uploaded photos
-  const [error, setError] = useState('');  // stores error message
-  const [loading, setLoading] = useState(false);  // tracks if request is in progress
+  const [photos, setPhotos] = useState([]);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  // handles photo upload when user selects a file
   async function handleUpload(e) {
-    const file = e.target.files[0];  // get the selected file
-    if (!file) return;  // if no file selected do nothing
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (photos.length >= 4) {
+      setError('Maximum 4 photos allowed.');
+      return;
+    }
 
     setError('');
     setLoading(true);
 
-    const formData = new FormData();  // FormData is used to send files to backend
-    formData.append('image', file);  // attach the image file
+    const formData = new FormData();
+    formData.append('image', file);
 
     try {
-      const res = await api.post('/api/users/photos/', formData);  // upload photo to backend
-      setPhotos([...photos, { id: res.data.photo_id, url: URL.createObjectURL(file) }]);  // add photo to local state
+      const res = await api.post('/api/users/photos/', formData);
+      setPhotos([...photos, { id: res.data.photo_id, url: URL.createObjectURL(file) }]);
     } catch (err) {
+      console.log('Photo upload error full:', JSON.stringify(err.response?.data));
       setError(err.response?.data?.error || 'Failed to upload photo. Please try again.');
     } finally {
       setLoading(false);
     }
   }
 
-  // handles photo deletion
   async function handleDelete(photo_id) {
     try {
-      await api.delete(`/api/users/photos/${photo_id}/`);  // delete photo from backend
-      setPhotos(photos.filter(p => p.id !== photo_id));  // remove photo from local state
+      await api.delete(`/api/users/photos/${photo_id}/`);
+      setPhotos(photos.filter(p => p.id !== photo_id));
     } catch (err) {
       setError('Failed to delete photo. Please try again.');
     }
@@ -42,88 +46,135 @@ function PhotoUpload() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.card}>
+      {/* Grain texture overlay */}
+      <div style={styles.grain}></div>
 
-        {/* header */}
-        <h1 style={styles.title}>blunt.</h1>
-        <p style={styles.subtitle}>Add Your Photos</p>
-        <p style={styles.hint}>Add Up To 4 Photos</p>
+      {/* Blunt. wordmark with ember dot */}
+      <h1 style={styles.logo}>
+        blunt<span style={styles.period}>.</span>
+        <span style={styles.emberDot}></span>
+      </h1>
 
-        {/* error message */}
-        {error && <p style={styles.error}>{error}</p>}
+      {/* Subtext */}
+      <p style={styles.subtext}>Add your photos.</p>
+      <p style={styles.hint}>Add up to 4 photos. First one is your main photo.</p>
 
-        {/* photo grid */}
-        <div style={styles.grid}>
-          {photos.map(photo => (
-            <div key={photo.id} style={styles.photoWrapper}>
-              <img src={photo.url} alt="profile" style={styles.photo} />
-              <button
-                onClick={() => handleDelete(photo.id)}
-                style={styles.deleteButton}
-              >
-                ✕
-              </button>
+      {/* Error message */}
+      {error && (
+        <p style={styles.error}>{error}</p>
+      )}
+
+      {/* Photo grid - always show 4 slots */}
+      <div style={styles.grid}>
+        {[0, 1, 2, 3].map((index) => {
+          const photo = photos[index];
+          const isEmpty = !photo;
+
+          return (
+            <div key={index} style={styles.slotWrapper}>
+              {isEmpty ? (
+                <label style={styles.emptySlot}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleUpload}
+                    style={{ display: 'none' }}
+                  />
+                  <span style={styles.plusIcon}>+</span>
+                </label>
+              ) : (
+                <div style={styles.filledSlot}>
+                  <img src={photo.url} alt="profile" style={styles.photo} />
+                  <button
+                    onClick={() => handleDelete(photo.id)}
+                    style={styles.deleteButton}
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              {/* Main label for first slot */}
+              {index === 0 && (
+                <span style={styles.mainLabel}>main</span>
+              )}
             </div>
-          ))}
-
-          {/* upload button — only show if less than 4 photos */}
-          {photos.length < 4 && (
-            <label style={styles.uploadBox}>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleUpload}
-                style={{ display: 'none' }}  // hide default file input
-              />
-              <span style={styles.uploadIcon}>+</span>
-            </label>
-          )}
-        </div>
-
-        {/* continue button — only show if at least 1 photo uploaded */}
-        {photos.length > 0 && (
-          <button
-            onClick={() => navigate('/intent')}
-            disabled={loading}
-            style={{ marginTop: '24px' }}
-          >
-            {loading ? 'uploading...' : 'continue'}
-          </button>
-        )}
-
+          );
+        })}
       </div>
+
+      {/* Continue button */}
+      <button
+        onClick={() => navigate('/intent')}
+        disabled={loading || photos.length === 0}
+        style={{
+          ...styles.button,
+          opacity: photos.length === 0 ? 0.5 : 1,
+          cursor: photos.length === 0 ? 'none' : 'none',
+        }}
+      >
+        {loading ? 'Uploading...' : 'Continue'}
+      </button>
     </div>
   );
 }
 
-// styles
 const styles = {
   container: {
     minHeight: '100vh',
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '24px',
+    padding: '60px 24px 24px',
+    position: 'relative',
   },
-  card: {
-    width: '100%',
-    maxWidth: '400px',
+  grain: {
+    position: 'fixed',
+    inset: 0,
+    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+    opacity: 0.05,
+    pointerEvents: 'none',
+    zIndex: 0,
   },
-  title: {
-    fontSize: '32px',
-    fontWeight: '600',
+  logo: {
+    fontFamily: "'Bebas Neue', sans-serif",
+    fontSize: '64px',
+    fontWeight: 400,
+    color: '#FFFFFF',
+    letterSpacing: '0.02em',
+    position: 'relative',
     marginBottom: '8px',
-    letterSpacing: '-1px',
+    zIndex: 1,
   },
-  subtitle: {
-    fontSize: '14px',
+  period: {
+    position: 'relative',
+  },
+  emberDot: {
+    position: 'absolute',
+    width: '8px',
+    height: '8px',
+    backgroundColor: '#E8512A',
+    borderRadius: '50%',
+    right: '-6px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    animation: 'emberPulse 2s ease-in-out infinite',
+    boxShadow: '0 0 15px 8px rgba(232, 81, 42, 0.5)',
+  },
+  subtext: {
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: '16px',
+    fontWeight: 300,
     color: '#888888',
     marginBottom: '4px',
+    zIndex: 1,
   },
   hint: {
     fontSize: '12px',
     color: '#555555',
-    marginBottom: '24px',
+    marginBottom: '32px',
+    fontFamily: "'DM Sans', sans-serif",
+    zIndex: 1,
   },
   error: {
     fontSize: '13px',
@@ -133,52 +184,89 @@ const styles = {
     backgroundColor: '#1a0000',
     borderRadius: '8px',
     border: '1px solid #330000',
+    zIndex: 1,
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',  // 2 columns
-    gap: '12px',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '16px',
+    width: '100%',
+    maxWidth: '440px',
+    zIndex: 1,
   },
-  photoWrapper: {
-    position: 'relative',
-    aspectRatio: '1',  // square
+  slotWrapper: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  emptySlot: {
+    width: '100%',
+    aspectRatio: '200/260',
+    backgroundColor: '#141414',
+    borderRadius: '8px',
+    border: '2px dashed #333333',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'none',
+    transition: 'border-color 0.2s',
+  },
+  filledSlot: {
+    width: '100%',
+    aspectRatio: '200/260',
     borderRadius: '8px',
     overflow: 'hidden',
+    position: 'relative',
   },
   photo: {
     width: '100%',
     height: '100%',
-    objectFit: 'cover',  // fill the box without stretching
+    objectFit: 'cover',
+  },
+  plusIcon: {
+    fontSize: '32px',
+    color: '#444444',
+    transition: 'color 0.2s',
   },
   deleteButton: {
     position: 'absolute',
     top: '8px',
     right: '8px',
-    width: '28px',
-    height: '28px',
+    width: '20px',
+    height: '20px',
     borderRadius: '50%',
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    color: '#F5F5F5',
-    fontSize: '12px',
+    backgroundColor: '#E8512A',
+    color: '#FFFFFF',
+    fontSize: '14px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    cursor: 'pointer',
-    padding: '0',
+    cursor: 'none',
+    padding: 0,
+    border: 'none',
   },
-  uploadBox: {
-    aspectRatio: '1',
+  mainLabel: {
+    fontSize: '10px',
+    color: '#E8512A',
+    letterSpacing: '0.15em',
+    textTransform: 'uppercase',
+    fontFamily: "'DM Sans', sans-serif",
+  },
+  button: {
+    backgroundColor: '#FFFFFF',
+    color: '#0A0A0A',
+    border: 'none',
     borderRadius: '8px',
-    border: '1px dashed #333333',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-  },
-  uploadIcon: {
-    fontSize: '24px',
-    color: '#555555',
+    padding: '14px 24px',
+    fontSize: '16px',
+    fontWeight: 500,
+    fontFamily: "'DM Sans', sans-serif",
+    width: '100%',
+    maxWidth: '440px',
+    marginTop: '32px',
+    zIndex: 1,
   },
 };
 
-export default PhotoUpload;  // export so App.js can use it
+export default PhotoUpload;
