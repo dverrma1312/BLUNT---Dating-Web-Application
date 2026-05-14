@@ -15,6 +15,7 @@ urlpatterns = [
     path('api/discovery/', include('apps.discovery.urls')),
     path('api/conversation/', include('apps.conversation.urls')),
     path('api/connections/', include('apps.connections.urls')),
+    path('api/notifications/', include('apps.notifications.urls')),
 ]
 
 if settings.DEBUG:

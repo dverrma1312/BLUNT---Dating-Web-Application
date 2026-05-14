@@ -18,6 +18,8 @@ import Rejections from './pages/Rejections';
 import Pending from './pages/Pending';
 import Login from './pages/Login';
 import AdminTest from './pages/AdminTest';
+import MyProfile from './pages/MyProfile';
+import Notifications from './pages/Notifications';
 
 function App() {
   const cursorDotRef = useRef(null);
@@ -117,12 +119,16 @@ function App() {
           <Route path="/intent" element={<PrivateRoute><IntentSetup /></PrivateRoute>} />
           <Route path="/discovery" element={<PrivateRoute><Discovery /></PrivateRoute>} />
           <Route path="/matches" element={<PrivateRoute><Matches /></PrivateRoute>} />
+          <Route path="/questions/:matchId" element={<PrivateRoute><Questions /></PrivateRoute>} />
           <Route path="/questions" element={<PrivateRoute><Questions /></PrivateRoute>} />
           <Route path="/match/:id/answers" element={<PrivateRoute><Answers /></PrivateRoute>} />
           <Route path="/match/:id/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />
           <Route path="/rejections" element={<PrivateRoute><Rejections /></PrivateRoute>} />
 
           <Route path="/pending" element={<PrivateRoute><Pending /></PrivateRoute>} />
+          <Route path="/my-profile" element={<PrivateRoute><MyProfile /></PrivateRoute>} />
+          <Route path="/notifications" element={<PrivateRoute><Notifications /></PrivateRoute>} />
+
             {/* default route — redirect to register */}
           <Route path="*" element={<Login />} />
         </Routes>

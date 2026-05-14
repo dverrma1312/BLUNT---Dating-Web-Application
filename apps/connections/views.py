@@ -3,6 +3,8 @@ from rest_framework.response import Response  # imports Response object
 from rest_framework.views import APIView  # imports base APIView class
 from rest_framework.permissions import IsAuthenticated  # only logged in users
 from .models import Match, Rejection  # imports our models
+from apps.conversation.models import PromptQuestion, PromptAnswer
+from apps.notifications.models import Notification
 
 
 class RejectMatchView(APIView):
@@ -55,6 +57,15 @@ class RejectMatchView(APIView):
         match.status = 'rejected'
         match.save()
 
+        # Create notification for the rejected user
+        Notification.objects.create(
+            user=rejected_user,
+            notification_type='rejection',
+            title='You were unmatched',
+            message='A match has ended. The reason has been recorded.',
+            reason=reason,
+        )
+
         return Response({
             'message': 'Match rejected.'
         }, status=status.HTTP_200_OK)
@@ -99,19 +110,36 @@ class MatchListView(APIView):
             # find the other user in this match
             other_user = match.user_b if request.user == match.user_a else match.user_a
 
+            # check chat unlock status
+            my_questions_count = PromptQuestion.objects.filter(user=request.user).count()
+            other_questions_count = PromptQuestion.objects.filter(user=other_user).count()
+            my_answers_count = PromptAnswer.objects.filter(match=match, answerer=other_user).count()
+            other_answers_count = PromptAnswer.objects.filter(match=match, answerer=request.user).count()
+
+            chat_unlocked = (
+                my_answers_count >= my_questions_count and
+                other_answers_count >= other_questions_count and
+                my_questions_count > 0 and
+                other_questions_count > 0
+            )
+
             data.append({
                 'id': match.id,  # match id
                 'status': match.status,  # active / expired / rejected
                 'created_at': match.created_at,  # when match was created
                 'expires_at': match.expires_at,  # when match expires
+                'chat_unlocked': chat_unlocked,  # whether chat is unlocked
                 'other_user': {
                     'id': other_user.id,
                     'name': other_user.name,  # other user's name
                     'city': other_user.city,  # other user's city
                     'photos': [
-                        {'image': photo.image.url, 'order': photo.order}
-                        for photo in other_user.photos.all()  # other user's photos
-                    ],
+                    {
+                        'image': photo.cloudinary_image if photo.cloudinary_image else (photo.image.url if photo.image else None),
+                        'order': photo.order
+                    }
+                    for photo in other_user.photos.all()
+                ],
                 },
             })
 

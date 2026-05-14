@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django_celery_beat', 
     'apps.connections',
     'apps.conversation',
+    'apps.notifications',
     'corsheaders',
     'channels',
     'django_ratelimit'
