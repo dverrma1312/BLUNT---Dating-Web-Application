@@ -286,3 +286,135 @@ class AdminTestUserPoolView(APIView):
             'today': [format_entry(e) for e in today_pool],
             'past_selections': [format_entry(e) for e in past_selections],
         }, status=status.HTTP_200_OK)
+
+
+import random
+import pytz
+from datetime import datetime, time, timedelta
+from .models import UserPreference
+from .serializers import UserPreferenceSerializer, UserPreferenceUpdateSerializer, PoolPreviewSerializer
+from apps.intent.models import UserIntent
+
+
+class UserPreferenceView(APIView):
+    """Get or update user's discovery preferences"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        preference, created = UserPreference.objects.get_or_create(user=request.user)
+        serializer = UserPreferenceSerializer(preference)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request):
+        preference, created = UserPreference.objects.get_or_create(user=request.user)
+
+        # Check if editable
+        if not preference.is_editable:
+            return Response({
+                'error': 'Preferences are locked. Edit window opens at 8am IST and closes at 7am.',
+                'lock_time': preference.lock_time_ist.isoformat(),
+                'generation_time': preference.generation_time_ist.isoformat(),
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = UserPreferenceUpdateSerializer(preference, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(UserPreferenceSerializer(preference).data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PoolPreviewView(APIView):
+    """Dry run of pool generation with current filters - no data saved"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        # Get or create preference
+        preference, created = UserPreference.objects.get_or_create(user=user)
+
+        # Get user's intent
+        try:
+            user_intent = user.intent
+        except UserIntent.DoesNotExist:
+            return Response({
+                'error': 'Please set your intent first.',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Calculate age bounds
+        today = timezone.now().date()
+        max_age_date = today.replace(year=today.year - preference.age_min)
+        min_age_date = today.replace(year=today.year - preference.age_max)
+
+        opposite_gender = 'F' if user.gender == 'M' else 'M'
+
+        # Base filters
+        base_filters = {
+            'gender': opposite_gender,
+            'is_active': True,
+            'is_verified': True,
+            'is_profile_complete': True,
+            'is_approved': True,
+        }
+
+        # Get all potential candidates (excluding self)
+        candidates = User.objects.filter(**base_filters).exclude(id=user.id)
+
+        # Apply age filter
+        candidates = candidates.filter(dob__lte=min_age_date, dob__gte=max_age_date)
+
+        # Apply city filter if set
+        if preference.city:
+            candidates = candidates.filter(city__icontains=preference.city)
+
+        # Apply lifestyle filters
+        if preference.drinks is not None:
+            candidates = candidates.filter(alcohol=preference.drinks)
+        if preference.smokes is not None:
+            candidates = candidates.filter(smoke=preference.smokes)
+        if preference.weed is not None:
+            candidates = candidates.filter(weed=preference.weed)
+
+        # Get already seen candidates (never show same person twice)
+        seen_candidates = DailyPool.objects.filter(
+            viewer=user,
+        ).values_list('candidate_id', flat=True)
+
+        candidates = candidates.exclude(id__in=seen_candidates)
+
+        # Step 1: Strict matches (same category)
+        strict_matches = list(candidates.filter(
+            intent__looking_for=user_intent.looking_for
+        ))
+        random.shuffle(strict_matches)
+
+        # Take up to 10 intent matches
+        intent_matches = strict_matches[:10]
+        intent_match_count = len(intent_matches)
+
+        # Step 2: If less than 10, fill from other categories
+        random_fills = []
+        if len(intent_matches) < 10:
+            remaining = 10 - len(intent_matches)
+
+            # Get candidates not in intent matches and not same category
+            strict_ids = [u.id for u in intent_matches]
+            loose_matches = list(candidates.exclude(
+                id__in=strict_ids
+            ).exclude(intent__looking_for=user_intent.looking_for))
+            random.shuffle(loose_matches)
+
+            random_fills = loose_matches[:remaining]
+
+        random_fill_count = len(random_fills)
+        total = intent_match_count + random_fill_count
+
+        return Response({
+            'intent_matches': intent_match_count,
+            'random_fills': random_fill_count,
+            'total': total,
+            'is_editable': preference.is_editable,
+            'lock_time': preference.lock_time_ist.isoformat(),
+            'generation_time': preference.generation_time_ist.isoformat(),
+            'looking_for': user_intent.looking_for,
+        }, status=status.HTTP_200_OK)
