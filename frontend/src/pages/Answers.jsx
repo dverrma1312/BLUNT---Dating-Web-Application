@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/axios';
+import { getWebSocketManager } from '../api/websocket';
 
 function Answers() {
   const navigate = useNavigate();
@@ -15,7 +16,37 @@ function Answers() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+    setupRealtimeUpdates();
+  }, [id]);
+
+  function setupRealtimeUpdates() {
+    const wsManager = getWebSocketManager();
+    const token = localStorage.getItem('access');
+    if (!token) return;
+
+    const wsUrl = `${process.env.REACT_APP_WS_URL || 'ws://127.0.0.1:8000'}/ws/notifications/?token=${token}`;
+    if (wsManager.ws?.readyState !== WebSocket.OPEN) {
+      wsManager.connect(wsUrl);
+    }
+
+    const unsubAnswer = wsManager.on('answer', (data) => {
+      console.log('[Answers] New answer received:', data);
+      if (data.match_id === parseInt(id)) {
+        fetchData();
+      }
+    });
+
+    const pollInterval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchData();
+      }
+    }, 15000);
+
+    return () => {
+      unsubAnswer();
+      clearInterval(pollInterval);
+    };
+  }
 
   async function fetchData() {
     try {

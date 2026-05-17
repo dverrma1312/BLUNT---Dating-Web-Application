@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';  // imports hooks
 import { useNavigate } from 'react-router-dom';  // imports useNavigate for redirecting
 import api from '../api/axios';  // imports our axios instance
+import { getWebSocketManager } from '../api/websocket';
 
 function Matches() {
   const navigate = useNavigate();
@@ -9,10 +10,34 @@ function Matches() {
   const [loading, setLoading] = useState(true);  // tracks if data is loading
   const [error, setError] = useState('');  // stores error message
 
-  // fetch matches when page loads
+  // fetch matches when page loads and set up polling
   useEffect(() => {
     fetchMatches();
+    setupRealtimeUpdates();
   }, []);
+
+  function setupRealtimeUpdates() {
+    const wsManager = getWebSocketManager();
+    const token = localStorage.getItem('access');
+    if (!token) return;
+
+    const wsUrl = `${process.env.REACT_APP_WS_URL || 'ws://127.0.0.1:8000'}/ws/notifications/?token=${token}`;
+    if (wsManager.ws?.readyState !== WebSocket.OPEN) {
+      wsManager.connect(wsUrl);
+    }
+
+    const unsubMatch = wsManager.on('match', (data) => {
+      console.log('[Matches] New match received:', data);
+      fetchMatches();
+    });
+
+    const pollInterval = setInterval(fetchMatches, 10000);
+
+    return () => {
+      unsubMatch();
+      clearInterval(pollInterval);
+    };
+  }
 
   async function fetchMatches() {
     try {

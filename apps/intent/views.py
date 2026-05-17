@@ -9,10 +9,13 @@ class UserIntentView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # get current intent — always exists after onboarding
-        intent = UserIntent.objects.get(user=request.user)
-        serializer = UserIntentSerializer(intent)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        # get current intent — returns 404 if none exists yet
+        try:
+            intent = UserIntent.objects.get(user=request.user)
+            serializer = UserIntentSerializer(intent)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except UserIntent.DoesNotExist:
+            return Response({'detail': 'No intent found for user.'}, status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request):
         # first time only — called during onboarding page
@@ -30,7 +33,10 @@ class UserIntentView(APIView):
 
     def put(self, request):
         # update existing intent anytime
-        intent = UserIntent.objects.get(user=request.user)
+        try:
+            intent = UserIntent.objects.get(user=request.user)
+        except UserIntent.DoesNotExist:
+            return Response({'error': 'No intent found. Use POST to create one.'}, status=status.HTTP_404_NOT_FOUND)
         serializer = UserIntentSerializer(intent, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()

@@ -12,6 +12,8 @@ function Register() {
     gender: '',
     city: '',
     category: '',
+    instagram_handle: '',
+    dob: '',
   });
 
   const [error, setError] = useState('');
@@ -33,11 +35,29 @@ function Register() {
       return;
     }
 
+    if (!form.instagram_handle) {
+      setError('Please enter your Instagram handle.');
+      return;
+    }
+
+    if (!form.dob) {
+      setError('Please enter your date of birth.');
+      return;
+    }
+
+    // Clean up Instagram handle - remove @ if user added it
+    const cleanHandle = form.instagram_handle.startsWith('@')
+      ? form.instagram_handle.slice(1)
+      : form.instagram_handle;
+
     setError('');
     setLoading(true);
 
     try {
-      await api.post('/api/users/register/', form);
+      await api.post('/api/users/register/', {
+        ...form,
+        instagram_handle: cleanHandle,
+      });
       localStorage.setItem('phone_number', form.phone_number);
       navigate('/verify-otp');
     } catch (err) {
@@ -72,7 +92,7 @@ function Register() {
         <input
           name="phone_number"
           type="tel"
-          placeholder="Phone Number"
+          placeholder="phone number"
           value={form.phone_number}
           onChange={handleChange}
           required
@@ -82,8 +102,31 @@ function Register() {
         <input
           name="name"
           type="text"
-          placeholder="Your Name"
+          placeholder="your name"
           value={form.name}
+          onChange={handleChange}
+          required
+          style={styles.input}
+        />
+
+        <input
+         name="dob"
+         type="date"
+         placeholder="date of birth"
+         value={form.dob}
+         onChange={handleChange}
+         required
+         style={{
+         ...styles.input,
+         colorScheme: 'dark',  // makes the date picker dark themed
+         }}
+        />
+
+        <input
+          name="instagram_handle"
+          type="text"
+          placeholder="@instagram_handle"
+          value={form.instagram_handle}
           onChange={handleChange}
           required
           style={styles.input}
@@ -96,9 +139,9 @@ function Register() {
           required
           style={styles.select}
         >
-          <option value="" style={styles.selectOption}>Select Gender</option>
-          <option value="M" style={styles.selectOption}>Male</option>
-          <option value="F" style={styles.selectOption}>Female</option>
+          <option value="" style={styles.selectOption}>select gender</option>
+          <option value="M" style={styles.selectOption}>male</option>
+          <option value="F" style={styles.selectOption}>female</option>
         </select>
 
         <Select
@@ -111,7 +154,7 @@ function Register() {
           ]}
           value={form.city ? { value: form.city, label: form.city } : null}
           onChange={handleCityChange}
-          placeholder="Your City"
+          placeholder="your city"
           isClearable
           required
           styles={{
@@ -123,6 +166,7 @@ function Register() {
               padding: '2px',
               minHeight: '48px',
               boxShadow: 'none',
+              cursor: 'none',
               '&:hover': {
                 borderColor: '#444444',
               },
@@ -174,11 +218,11 @@ function Register() {
           required
           style={styles.select}
         >
-          <option value="" style={styles.selectOption}>What Are You Here For?</option>
-          <option value="hookup" style={styles.selectOption}>Hookup</option>
-          <option value="hangout" style={styles.selectOption}>Hangout</option>
-          <option value="smokeup" style={styles.selectOption}>Smokeup</option>
-          <option value="coffee" style={styles.selectOption}>Coffee</option>
+          <option value="" style={styles.selectOption}>what are you here for?</option>
+          <option value="hookup" style={styles.selectOption}>hookup</option>
+          <option value="hangout" style={styles.selectOption}>hangout</option>
+          <option value="smokeup" style={styles.selectOption}>smokeup</option>
+          <option value="coffee" style={styles.selectOption}>coffee</option>
         </select>
 
         <button type="submit" disabled={loading} style={styles.button}>
@@ -187,6 +231,10 @@ function Register() {
 
         <p style={styles.linkText}>
           Already have an account? <Link to="/login" style={styles.link}>Log In</Link>
+        </p>
+
+        <p style={styles.termsText}>
+            By signing up, you agree to our <a href="#" onClick={(e) => e.preventDefault()} style={styles.termsLink}>Terms</a>. See how we use your data in our <a href="#" onClick={(e) => e.preventDefault()} style={styles.termsLink}>Privacy Policy</a>.
         </p>
       </form>
     </div>
@@ -234,7 +282,7 @@ const styles = {
     top: '50%',
     transform: 'translateY(-50%)',
     animation: 'emberPulse 2s ease-in-out infinite',
-    boxShadow: '0 0 15px 8px rgba(232, 81, 42, 0.5)',
+    boxShadow: '0 0 20px 10px rgba(232, 81, 42, 0.6)',
   },
   subtext: {
     fontFamily: "'DM Sans', sans-serif",
@@ -246,12 +294,9 @@ const styles = {
   },
   error: {
     fontSize: '13px',
-    color: '#ff4444',
     marginBottom: '16px',
     padding: '12px',
-    backgroundColor: '#1a0000',
     borderRadius: '8px',
-    border: '1px solid #330000',
     zIndex: 1,
   },
   form: {
@@ -272,7 +317,7 @@ const styles = {
     fontFamily: "'DM Sans', sans-serif",
     outline: 'none',
     width: '100%',
-    transition: 'border-color 0.2s',
+    cursor: 'none',
   },
   select: {
     appearance: 'none',
@@ -311,12 +356,27 @@ const styles = {
     color: '#888888',
     textAlign: 'center',
     cursor: 'none',
-    marginTop: '16px',
+    marginTop: '8px',
     fontFamily: "'DM Sans', sans-serif",
   },
   link: {
     color: '#FFFFFF',
     textDecoration: 'none',
+    transition: 'color 0.2s',
+  },
+  termsText: {
+    fontSize: '11px',
+    color: '#555555',
+    textAlign: 'center',
+    maxWidth: '320px',
+    marginTop: '24px',
+    fontFamily: "'DM Sans', sans-serif",
+    lineHeight: 1.5,
+    zIndex: 1,
+  },
+  termsLink: {
+    color: '#888888',
+    textDecoration: 'underline',
     transition: 'color 0.2s',
   },
 };

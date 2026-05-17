@@ -121,16 +121,46 @@ class SelectCandidateView(APIView):
             ).exists()
 
             if not already_matched:  # only create match if it doesnt exist yet
-                Match.objects.create(
+                match = Match.objects.create(
                     user_a=request.user,   # current user
                     user_b=entry.candidate,  # the candidate they selected
                 )
-                match_created = True  # flag that match was created
+                match_created = True
+                self._notify_match(match, request.user, entry.candidate)
 
         return Response({
             'message': 'Profile selected successfully.',
             'match_created': match_created,  # tells frontend if a match was made
         }, status=status.HTTP_200_OK)
+
+    def _notify_match(self, match, user_a, user_b):
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+
+        other_user = user_b if user_a == user_a else user_a
+
+        other_photos = list(other_user.photos.all())
+        other_photo_url = other_photos[0].image.url if other_photos else None
+
+        async def send_notification():
+            channel_layer = get_channel_layer()
+            for target_user, notification_type in [(user_a, 'initiator'), (user_b, 'recipient')]:
+                other = user_b if target_user == user_a else user_a
+                other_photos = list(other.photos.all())
+                other_photo = other_photos[0].image.url if other_photos else None
+
+                await channel_layer.group_send(
+                    f'notifications_{target_user.id}',
+                    {
+                        'type': 'match_created',
+                        'match_id': match.id,
+                        'other_user_id': other.id,
+                        'other_user_name': other.name,
+                        'other_user_photo': other_photo,
+                    }
+                )
+
+        async_to_sync(send_notification())
 
 
 class PassCandidateView(APIView):

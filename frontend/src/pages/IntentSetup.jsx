@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import BugReportButton from '../components/BugReportButton';
+import ContextualSuggestion from '../components/ContextualSuggestion';
 
 function IntentSetup() {
   const navigate = useNavigate();
@@ -66,7 +68,7 @@ function IntentSetup() {
   const year = today.getFullYear();
   const formattedDate = `${dayName}, ${day} ${monthName} ${year}`;
 
-  const pillOptions = ['Flexible', 'Fixed', 'Spontaneous'];
+  const pillOptions = ['Fixed', "I Don't Know", 'Up To You'];
 
   const pillStyle = (isSelected) => ({
     padding: '10px 24px',

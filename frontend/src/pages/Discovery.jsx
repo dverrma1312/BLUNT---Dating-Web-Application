@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { getWebSocketManager, createChatWebSocket } from '../api/websocket';
+import FilterPanel from '../components/discovery/FilterPanel';
+import BugReportButton from '../components/BugReportButton';
+import ContextualSuggestion from '../components/ContextualSuggestion';
 
 const INTENT_COLORS = {
   'Hookup': '#FF3B3B',
@@ -72,11 +76,51 @@ function Discovery() {
   const [mySubmittedAnswerIds, setMySubmittedAnswerIds] = useState(new Set());
   const [wsError, setWsError] = useState(false);
   const [inlineAnswerInputs, setInlineAnswerInputs] = useState({});
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [suggestion, setSuggestion] = useState(null);
+
+  const handleFilterPanelClose = () => {
+    setShowFilterPanel(false);
+    fetchInitialData();
+  };
 
   useEffect(() => {
     fetchInitialData();
     fetchNotificationCount();
+    setupNotificationListener();
   }, []);
+
+  function setupNotificationListener() {
+    const wsManager = getWebSocketManager();
+    const token = localStorage.getItem('access');
+    if (!token) return;
+
+    const wsUrl = `${process.env.REACT_APP_WS_URL || 'ws://127.0.0.1:8000'}/ws/notifications/?token=${token}`;
+    wsManager.connect(wsUrl);
+
+    const unsubMatch = wsManager.on('match', (data) => {
+      console.log('[Discovery] New match received:', data);
+      api.get('/api/connections/matches/').then(res => {
+        const activeMatches = res.data.filter(m => m.status === 'active');
+        setMatches(activeMatches);
+        setConversations(res.data);
+        if (data.other_user_name) {
+          setToast({ message: `New match: ${data.other_user_name}!`, type: 'match' });
+          setTimeout(() => setToast(null), 3000);
+        }
+      }).catch(err => console.log('Failed to refresh matches:', err));
+    });
+
+    const unsubAnswer = wsManager.on('answer', (data) => {
+      console.log('[Discovery] New answer received:', data);
+      fetchInlineAnswersData(data.match_id);
+    });
+
+    return () => {
+      unsubMatch();
+      unsubAnswer();
+    };
+  }
 
   async function fetchNotificationCount() {
     try {
@@ -123,6 +167,29 @@ function Discovery() {
       setRemoveError('');
     }
   }, [activeView]);
+
+  // Contextual suggestions
+  useEffect(() => {
+    if (!userProfile) return;
+
+    const availableProfiles = profiles.filter(p => !p.was_selected && !p.was_passed);
+
+    if (availableProfiles.length === 0 && profiles.length === 0) {
+      setSuggestion('No profiles in your pool. Try updating your daily intent to see new people.');
+    } else if (availableProfiles.length === 0 && selectCount >= 5) {
+      setSuggestion("You've seen everyone in your pool! Check back tomorrow for new profiles.");
+    } else if (matches.length === 0 && profiles.length > 0 && selectCount === 0) {
+      setSuggestion('No matches yet. Select people you like to get matched!');
+    } else if (userProfile && !userProfile.is_profile_complete) {
+      setSuggestion('Complete your profile to get better matches.');
+    } else if (userProfile && !userProfile.photos?.length) {
+      setSuggestion('Add photos to your profile to get more matches.');
+    } else if (activeView?.type === 'chat' && chatMessages.length === 0) {
+      setSuggestion('Break the ice! Send the first message.');
+    } else {
+      setSuggestion(null);
+    }
+  }, [profiles, matches, userProfile, selectCount, activeView, chatMessages]);
 
   async function fetchInitialData() {
     try {
@@ -172,13 +239,11 @@ function Discovery() {
     const token = localStorage.getItem('access');
     if (!token) return;
 
-    const ws = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${matchId}/?token=${token}`);
+    if (chatWsRef.current) {
+      chatWsRef.current.forceClose();
+    }
 
-    ws.onopen = () => {
-      console.log('Chat WebSocket connected');
-    };
-
-    ws.onmessage = (event) => {
+    const handleMessage = (event) => {
       console.log('WS message received:', event.data);
       const data = JSON.parse(event.data);
       console.log('Parsed data:', data);
@@ -200,17 +265,18 @@ function Discovery() {
       }
     };
 
-    ws.onerror = (err) => {
+    const handleError = (err) => {
       console.log('WebSocket error:', err);
     };
 
-    ws.onclose = (e) => {
+    const handleClose = (e) => {
       console.log('Chat WebSocket closed:', e.code, e.reason);
       if (e.code !== 1000) {
         setWsError(true);
       }
     };
 
+    const ws = createChatWebSocket(matchId, handleMessage, handleError, handleClose);
     chatWsRef.current = ws;
   }
 
@@ -512,7 +578,7 @@ function Discovery() {
         <main style={styles.main}>
         {activeView === null ? (
           <>
-            <div style={{ display: "flex", justifyContent: "center", paddingBottom: "32px" }}>
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", paddingBottom: "32px", gap: "24px" }}>
               <h1 style={{
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontSize: '32px',
@@ -537,6 +603,25 @@ function Discovery() {
                   boxShadow: '0 0 15px 8px rgba(232, 81, 42, 0.5)',
                 }} />
               </h1>
+              <button
+                onClick={() => setShowFilterPanel(true)}
+                style={{
+                  backgroundColor: '#1A1A1A',
+                  border: '1px solid #333',
+                  borderRadius: '6px',
+                  padding: '8px 16px',
+                  color: '#888',
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <span style={{ fontSize: '14px' }}>⚙</span>
+                Daily Intent
+              </button>
             </div>
             <div style={styles.gridContainer}>
               {profiles.map((profile, idx) => {
@@ -631,6 +716,15 @@ function Discovery() {
                 <div style={styles.noProfiles}>
                   <p>no profiles today.</p>
                   <p style={styles.noProfilesSub}>pools refresh at 8am IST</p>
+                </div>
+              )}
+
+              {suggestion && profiles.length > 0 && (
+                <div style={{ marginTop: '-8px', marginBottom: '16px', padding: '0 4px' }}>
+                  <ContextualSuggestion
+                    suggestion={suggestion}
+                    onDismiss={() => setSuggestion(null)}
+                  />
                 </div>
               )}
             </div>
@@ -1197,9 +1291,6 @@ function Discovery() {
                   {viewingProfile.name}
                   {viewingProfile.dob && <span style={styles.detailAge}>, {calculateAge(viewingProfile.dob)}</span>}
                 </h2>
-                {viewingProfile.instagram_handle && (
-                  <span style={styles.detailInstagram}>@{viewingProfile.instagram_handle}</span>
-                )}
                 {viewingProfile.category && (
                   <div style={{
                     ...styles.detailCategory,
@@ -1300,6 +1391,11 @@ function Discovery() {
           {toast.message}
         </div>
       )}
+
+      {/* Daily Intent Panel */}
+      {showFilterPanel && <FilterPanel onClose={handleFilterPanelClose} />}
+
+      <BugReportButton page="Discovery" />
 
       <style>{`
         @keyframes fadeUp {
@@ -1647,6 +1743,12 @@ const styles = {
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
     width: 'fit-content',
+  },
+  cardInstagram: {
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: '11px',
+    color: '#666',
+    marginTop: '4px',
   },
   cardBio: {
     fontFamily: "'DM Sans', sans-serif",

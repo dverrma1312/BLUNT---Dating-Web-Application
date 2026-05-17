@@ -3,7 +3,8 @@ from rest_framework.response import Response  # imports Response object
 from rest_framework.views import APIView  # imports base APIView class
 from rest_framework.permissions import IsAuthenticated  # only logged in users
 from .models import Match, Rejection  # imports our models
-from apps.conversation.models import PromptQuestion, PromptAnswer
+from apps.conversation.models import PromptQuestion, PromptAnswer, Message
+from apps.discovery.models import DailyPool
 from apps.notifications.models import Notification
 
 
@@ -57,12 +58,32 @@ class RejectMatchView(APIView):
         match.status = 'rejected'
         match.save()
 
+        # Delete conversation messages for this match
+        Message.objects.filter(match=match).delete()
+
+        # Remove both users from each other's discovery pools
+        DailyPool.objects.filter(
+            viewer=request.user, candidate=rejected_user
+        ).delete()
+        DailyPool.objects.filter(
+            viewer=rejected_user, candidate=request.user
+        ).delete()
+
         # Create notification for the rejected user
         Notification.objects.create(
             user=rejected_user,
             notification_type='rejection',
             title='You were unmatched',
-            message='A match has ended. The reason has been recorded.',
+            message=f'{request.user.name} ended the match. Reason: {reason}',
+            reason=reason,
+        )
+
+        # Create notification for the user who rejected (optional - shows they've done it)
+        Notification.objects.create(
+            user=request.user,
+            notification_type='rejection',
+            title='Match ended',
+            message=f'You ended the match with {rejected_user.name}.',
             reason=reason,
         )
 
@@ -133,6 +154,7 @@ class MatchListView(APIView):
                     'id': other_user.id,
                     'name': other_user.name,  # other user's name
                     'city': other_user.city,  # other user's city
+                    'instagram_handle': other_user.instagram_handle or None,  # other user's instagram
                     'photos': [
                     {
                         'image': photo.cloudinary_image if photo.cloudinary_image else (photo.image.url if photo.image else None),

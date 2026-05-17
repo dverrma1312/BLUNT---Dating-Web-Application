@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/axios';
+import { createChatWebSocket } from '../api/websocket';
 
 function Chat() {
   const navigate = useNavigate();
   const { id } = useParams();
   const bottomRef = useRef(null);
-  const wsRef = useRef(null);  // stores the WebSocket instance
+  const wsRef = useRef(null);
 
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -19,36 +20,35 @@ function Chat() {
     fetchMessages();
   }, []);
 
-  // open WebSocket once we have myId
   useEffect(() => {
     if (!myId) return;
 
-    const token = localStorage.getItem('access');
-    const ws = new WebSocket(`wss://blunt-dating-web-application-production.up.railway.app/ws/chat/${id}/?token=${token}`);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      console.log('WebSocket connected');
-    };
-
-    ws.onmessage = (e) => {
+    const handleMessage = (e) => {
       const msg = JSON.parse(e.data);
       setMessages(prev => [...prev, msg]);
     };
 
-    ws.onerror = (err) => {
-      console.error('WebSocket error:', err);
-      setError('WebSocket connection failed.');
+    const handleError = (err) => {
+      console.log('WebSocket error:', err);
     };
 
-    ws.onclose = () => {
-      console.log('WebSocket closed');
+    const handleClose = (e) => {
+      console.log('WebSocket closed:', e.code);
+      if (e.code !== 1000) {
+        setError('Connection lost. Reconnecting...');
+        setTimeout(() => setError(''), 3000);
+      }
     };
+
+    const ws = createChatWebSocket(id, handleMessage, handleError, handleClose);
+    wsRef.current = ws;
 
     return () => {
-      ws.close();
+      if (wsRef.current) {
+        wsRef.current.forceClose();
+      }
     };
-  }, [myId]);
+  }, [myId, id]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -78,7 +78,7 @@ function Chat() {
     e.preventDefault();
     if (!newMessage.trim()) return;
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-      setError('Connection lost. Please refresh.');
+      setError('Connection lost. Reconnecting...');
       return;
     }
     wsRef.current.send(JSON.stringify({ content: newMessage }));

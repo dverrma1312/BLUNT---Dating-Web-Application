@@ -14,6 +14,7 @@ from django_ratelimit.decorators import ratelimit
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -107,6 +108,7 @@ class PhotoUploadView(APIView):
 
 
 class SendOTPView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
 
 
@@ -145,6 +147,7 @@ class SendOTPView(APIView):
 
 
 class VerifyOTPView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
 
     def post(self, request):

@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/conversation/', include('apps.conversation.urls')),
     path('api/connections/', include('apps.connections.urls')),
     path('api/notifications/', include('apps.notifications.urls')),
+    path('api/bug-reports/', include('apps.bug_reports.urls')),
 ]
 
 if settings.DEBUG:

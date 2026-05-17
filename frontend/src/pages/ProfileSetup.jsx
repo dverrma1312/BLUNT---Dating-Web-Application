@@ -1,12 +1,35 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import BugReportButton from '../components/BugReportButton';
 
 function ProfileSetup() {
   const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    async function fetchProfile() {
+      try {
+        const res = await api.get('/api/users/profile/');
+        const data = res.data;
+
+        setForm({
+          description: data.description || '',
+          relationship_type: data.relationship_type || '',
+          religion: data.religion || '',
+          sexuality: data.sexuality || '',
+          drugs: data.drugs ? 'Yes' : data.drugs === false ? 'No' : '',
+          smoke: data.smoke ? 'Yes' : data.smoke === false ? 'No' : '',
+          weed: data.weed ? 'Yes' : data.weed === false ? 'No' : '',
+          alcohol: data.alcohol ? 'Yes' : data.alcohol === false ? 'No' : '',
+          instagram_handle: data.instagram_handle || '',
+        });
+      } catch (err) {
+        console.log('Failed to fetch profile:', err);
+      }
+    }
+    fetchProfile();
   }, []);
 
   const [form, setForm] = useState({
@@ -18,9 +41,7 @@ function ProfileSetup() {
     smoke: '',
     weed: '',
     alcohol: '',
-    dob_day: '',
-    dob_month: '',
-    dob_year: '',
+    instagram_handle: '',
   });
 
   const [error, setError] = useState('');
@@ -35,29 +56,22 @@ function ProfileSetup() {
     setError('');
     setLoading(true);
 
-    const monthMap = {
-      January: '01', February: '02', March: '03', April: '04',
-      May: '05', June: '06', July: '07', August: '08',
-      September: '09', October: '10', November: '11', December: '12'
-    };
-
-    const monthName = months[parseInt(form.dob_month) - 1];
-    const date_of_birth = form.dob_year && form.dob_month && form.dob_day
-      ? `${form.dob_year}-${monthMap[monthName]}-${String(form.dob_day).padStart(2, '0')}`
-      : '';
-
     try {
-      await api.put('/api/users/profile/', {
+      const updateData = {
         description: form.description,
-        relationship_type: form.relationship_type,
-        religion: form.religion,
-        sexuality: form.sexuality,
-        drugs: form.drugs,
-        smoke: form.smoke,
-        weed: form.weed,
-        alcohol: form.alcohol,
-        date_of_birth: date_of_birth,
-      });
+        relationship_type: form.relationship_type || null,
+        religion: form.religion || null,
+        sexuality: form.sexuality || null,
+        instagram_handle: form.instagram_handle || null,
+      };
+
+      // Only include boolean fields if they have a value
+      if (form.drugs) updateData.drugs = form.drugs === 'Yes';
+      if (form.smoke) updateData.smoke = form.smoke === 'Yes';
+      if (form.weed) updateData.weed = form.weed === 'Yes';
+      if (form.alcohol) updateData.alcohol = form.alcohol === 'Yes';
+
+      await api.put('/api/users/profile/', updateData);
       navigate('/photos');
     } catch (err) {
       console.log('Profile update error full:', JSON.stringify(err.response?.data));
@@ -80,10 +94,6 @@ function ProfileSetup() {
     fontWeight: 500,
     transition: 'background-color 0.2s, color 0.2s',
   });
-
-  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const days = Array.from({ length: 31 }, (_, i) => i + 1);
-  const years = Array.from({ length: 36 }, (_, i) => 2005 - i);
 
   return (
     <div style={styles.container}>
@@ -167,39 +177,15 @@ function ProfileSetup() {
           <option value="Prefer Not To Say" style={styles.selectOption}>Prefer Not To Say</option>
         </select>
 
-        {/* Date of Birth */}
-        <div style={styles.dobContainer}>
-          <select
-            name="dob_day"
-            value={form.dob_day}
-            onChange={handleChange}
-            required
-            style={styles.dobSelect}
-          >
-            <option value="" style={styles.selectOption}>Day</option>
-            {days.map(d => <option key={d} value={d} style={styles.selectOption}>{d}</option>)}
-          </select>
-          <select
-            name="dob_month"
-            value={form.dob_month}
-            onChange={handleChange}
-            required
-            style={styles.dobSelect}
-          >
-            <option value="" style={styles.selectOption}>Month</option>
-            {months.map((m, i) => <option key={i + 1} value={String(i + 1).padStart(2, '0')} style={styles.selectOption}>{m}</option>)}
-          </select>
-          <select
-            name="dob_year"
-            value={form.dob_year}
-            onChange={handleChange}
-            required
-            style={styles.dobSelect}
-          >
-            <option value="" style={styles.selectOption}>Year</option>
-            {years.map(y => <option key={y} value={y} style={styles.selectOption}>{y}</option>)}
-          </select>
-        </div>
+        {/* Instagram Handle */}
+        <input
+          type="text"
+          name="instagram_handle"
+          placeholder="@instagram_handle"
+          value={form.instagram_handle}
+          onChange={handleChange}
+          style={styles.input}
+        />
 
         {/* Drugs */}
         <div style={styles.toggleLabel}>Drugs?</div>
@@ -281,6 +267,8 @@ function ProfileSetup() {
           {loading ? 'Saving...' : 'Continue'}
         </button>
       </form>
+
+      <BugReportButton page="ProfileSetup" />
     </div>
   );
 }
@@ -365,6 +353,18 @@ const styles = {
     outline: 'none',
     width: '100%',
     resize: 'none',
+    transition: 'border-color 0.2s',
+  },
+  input: {
+    backgroundColor: '#141414',
+    border: '1px solid #222222',
+    borderRadius: '4px',
+    padding: '14px 16px',
+    color: '#FFFFFF',
+    fontSize: '16px',
+    fontFamily: "'DM Sans', sans-serif",
+    outline: 'none',
+    width: '100%',
     transition: 'border-color 0.2s',
   },
   select: {

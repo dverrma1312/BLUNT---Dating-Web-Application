@@ -7,6 +7,67 @@ from apps.connections.models import Match
 from .models import Message, PromptQuestion, PromptAnswer
 
 
+class NotificationConsumer(AsyncWebsocketConsumer):
+
+    async def connect(self):
+        self.user = None
+        token = self.scope.get('query_string', b'').decode()
+
+        if 'token=' in token:
+            token = token.split('token=')[-1].split('&')[0]
+            try:
+                access_token = AccessToken(token)
+                self.user = await self.get_user(access_token['user_id'])
+            except Exception:
+                await self.close()
+                return
+
+        if not self.user:
+            await self.close()
+            return
+
+        self.room_group_name = f'notifications_{self.user.id}'
+
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.accept()
+        print(f"[NOTIFICATIONS] Connected: {self.user.name}")
+
+    async def disconnect(self, close_code):
+        if self.user:
+            print(f"[NOTIFICATIONS] Disconnected: {self.user.name}")
+            await self.channel_layer.group_discard(f'notifications_{self.user.id}', self.channel_name)
+
+    async def receive(self, text_data):
+        pass
+
+    async def match_created(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'match_created',
+            'match_id': event.get('match_id'),
+            'other_user_id': event.get('other_user_id'),
+            'other_user_name': event.get('other_user_name'),
+            'other_user_photo': event.get('other_user_photo'),
+        }))
+
+    async def answer_submitted(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'answer_submitted',
+            'match_id': event.get('match_id'),
+            'question_id': event.get('question_id'),
+            'question': event.get('question'),
+        }))
+
+    async def notification(self, event):
+        await self.send(text_data=json.dumps(event.get('data', {})))
+
+    @database_sync_to_async
+    def get_user(self, user_id):
+        try:
+            return User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return None
+
+
 class ChatConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):

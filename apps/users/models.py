@@ -96,6 +96,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     weed = models.BooleanField(null=True, blank=True)
     alcohol = models.BooleanField(null=True, blank=True)
     dob = models.DateField(null=True, blank=True)
+    instagram_handle = models.CharField(max_length=50, blank=True)
 
     is_active = models.BooleanField(default=True)   # if False user is banned or deactivated
     is_staff = models.BooleanField(default=False)   # if True user can access admin panel

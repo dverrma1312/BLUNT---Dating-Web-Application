@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'apps.connections',
     'apps.conversation',
     'apps.notifications',
+    'apps.bug_reports',
     'corsheaders',
     'channels',
     'django_ratelimit'

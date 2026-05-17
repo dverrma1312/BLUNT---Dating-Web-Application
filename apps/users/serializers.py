@@ -40,6 +40,7 @@ class UserSerializer(serializers.ModelSerializer):
             'weed',
             'alcohol',
             'dob',
+            'instagram_handle',
             'is_verified',
             'is_profile_complete',
             'is_approved',
@@ -49,9 +50,11 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ['is_verified', 'is_profile_complete', 'is_approved', 'created_at']
 
 class RegisterSerializer(serializers.ModelSerializer):
+    instagram_handle = serializers.CharField(max_length=50)
+
     class Meta:
         model = User
-        fields = ['phone_number', 'name', 'gender', 'city', 'category']
+        fields = ['phone_number', 'name', 'gender', 'city', 'category', 'instagram_handle', 'dob']
 
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -59,7 +62,10 @@ class RegisterSerializer(serializers.ModelSerializer):
             name=validated_data['name'],
             gender=validated_data['gender'],
             city=validated_data['city'],
+
         )
         user.category = validated_data['category']
+        user.instagram_handle = validated_data['instagram_handle']
+        user.dob = validated_data['dob']
         user.save()
         return user
