@@ -43,36 +43,67 @@ Blunt 2.0 is a modern, real-time dating web application designed to connect user
 
  
 ---
+🛠️ Tech Stack
 
-## ⚙️ Setup & Installation
 
-### Prerequisites
+Backend
+Framework: Django 6.0 & Django REST Framework (DRF)
+Real-time Engine: Django Channels (WebSockets)
+Task Queue & Scheduler: Celery & Celery Beat (using Redis as a broker)
+Database: PostgreSQL
+Caching & Broker: Redis
+Media Storage: Cloudinary (for profile photos)
+Static Files: WhiteNoise
+Frontend
+Library: React 19
+Routing: React Router
+API Client: Axios
+WebSockets: Browser WebSocket API for real-time messaging
+
+
+📂 Repository Structure
+
+├── backend/                  # Django backend project
+│   ├── config/               # Settings and configuration (base, dev, prod)
+│   ├── users/                # Auth, profile, OTP, photos, ratio-balancing
+│   ├── intent/               # Intent selection and category seats
+│   ├── discovery/            # Pool generation and discovery feed logic
+│   ├── connections/          # Match management and request lifecycles
+│   ├── conversation/         # Real-time WebSocket chat handlers
+│   └── manage.py
+│
+└── frontend/                 # React frontend project
+    ├── src/                  # React source files
+    ├── public/               # Static assets
+    ├── package.json
+    └── tailwind.config.js    # Styling configuration
+
+    
+⚙️ Setup & Installation
+
+Prerequisites
 Make sure you have the following installed locally:
-* Python 3.10+
-* Node.js 18+
-* PostgreSQL
-* Redis Server
 
----
-
-### Backend Setup
-
-1. **Navigate to backend and create a virtual environment:**
-   ```bash
-   cd backend
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-   Install dependencies:
+Python 3.10+
+Node.js 18+
+PostgreSQL
+Redis Server
+Backend Setup
+Navigate to backend and create a virtual environment:
 
 bash
 
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+Install dependencies:
+
+bash
 
 pip install -r requirements.txt
 Configure Environment Variables: Create a .env file in the backend/ directory (see .env.example for reference):
 
 env
-
 
 SECRET_KEY=your-django-secret-key
 DEBUG=True
@@ -83,19 +114,16 @@ Run database migrations:
 
 bash
 
-
 python manage.py makemigrations
 python manage.py migrate
 Start the development server:
 
 bash
 
-
 python manage.py runserver
 Start Celery Worker & Beat (in separate terminals):
 
 bash
-
 
 # Start Celery Worker
 celery -A config worker -l info
@@ -106,12 +134,10 @@ Navigate to the frontend directory:
 
 bash
 
-
 cd ../frontend
 Install dependencies:
 
 bash
-
 
 npm install
 Configure API connection: Configure your environment variables or backend base URL in src/utils/axios.js (pointing to your running backend at http://127.0.0.1:8000).
@@ -119,7 +145,6 @@ Configure API connection: Configure your environment variables or backend base U
 Start the React development server:
 
 bash
-
 
 npm start
 🔗 API Endpoint Reference
@@ -134,8 +159,3 @@ Endpoint	HTTP Method	Description
 🗓️ Scheduled Workflows
 Daily Pool Generation (8:00 AM IST): Runs the generate-daily-pools task to match users and populate their feeds for the day.
 Match Expiration (Midnight IST): Runs the expire-matches task to clear active connections, encouraging users to connect intentionally and promptly.
-2:43 AM
-
-
-
-MCP Error
