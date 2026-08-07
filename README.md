@@ -156,6 +156,10 @@ Endpoint	HTTP Method	Description
 /api/discovery/feed/	GET	Retrieve daily discovery pool
 /api/connections/match/	POST/GET	Send connection requests / list active matches
 /api/conversation/	GET	Retrieve list of chat conversations
+
+
 🗓️ Scheduled Workflows
+
+
 Daily Pool Generation (8:00 AM IST): Runs the generate-daily-pools task to match users and populate their feeds for the day.
 Match Expiration (Midnight IST): Runs the expire-matches task to clear active connections, encouraging users to connect intentionally and promptly.
